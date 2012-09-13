@@ -14,25 +14,30 @@
 #     REVISION: ---
 #===============================================================================
 
-use Moose; 
+use Modern::Perl;
 use MooseX::Declare;
-use P2I::PleskDB;
-use P2I::ISPconfigSOAP;
 
 class P2I::Converter {
+    use P2I::PleskDB;
+    use Scalar::Util qw/ looks_like_number /;
+    use Data::Dumper;
+
     has db          => (is => 'ro', isa => 'P2I::PleskDB',       required => 1);
     has soap        => (is => 'ro', isa => 'P2I::ISPconfigSOAP', required => 1);
-    has query       => (is => 'ro', isa => 'Str',                required => 1);
-    has field_map   => (is => 'ro', isa => 'HashRef',            required => 1);
-    has soap_call   => (is => 'ro', isa => 'Str',                required => 1);
 
-    method convert {
-        foreach my $record ($self->db->read_all) {
-            $self->soap->{$self->soap_call}($self->soap->session, 1, $self->_map_fields($recorda);)
-        );
-    }
-    method _map_fields {
+    method soap_call { $self->soap->soap_call(@_) }
 
+    method _map_fields($src, $dst, $map) {
+        while(my ($dattr, $sattr) = each %$map) {
+            my $val;
+            for($sattr) {
+                when(undef)                 { $val = undef };
+                when(looks_like_number($_)) { $val = $sattr };
+                when(!length)               { $val = $sattr };
+                default                     { $val = $src->$sattr };
+            }
+            $dst->{$dattr} = $val;
+        }
     }
 }
 
