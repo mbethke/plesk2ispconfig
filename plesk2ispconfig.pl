@@ -22,9 +22,10 @@ use strict;
 use warnings;
 use utf8;
 use local::lib;
+use Modern::Perl;
 use P2I::Types;
-use P2I::Converter::Client;
-use P2I::Converter::Domain;
+use P2I::Converter::Clients;
+use P2I::Converter::Domains;
 use P2I::DB::Clients;
 use P2I::DB::Domains;
 
@@ -39,5 +40,5 @@ P2I::ISPconfigSOAP->proxy('https://mail2-de.zonarix.com:8080/remote/index.php');
 P2I::ISPconfigSOAP->uri('https://mail2-de.zonarix.com:8080/remote/');
 
 my $soap = P2I::ISPconfigSOAP->new;
-#P2I::Converter::Client->new(db => P2I::DB::Clients->new, soap => $soap)->convert;
-P2I::Converter::Domain->new(db => P2I::DB::Domains->new, soap => $soap)->convert;
+#P2I::Converter::Clients->new(db => P2I::DB::Clients->new, soap => $soap)->convert;
+P2I::Converter::Domains->new(db => P2I::DB::Domains->new, soap => $soap)->convert;

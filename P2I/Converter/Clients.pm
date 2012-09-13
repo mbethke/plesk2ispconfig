@@ -1,6 +1,6 @@
 #===============================================================================
 #
-#         FILE: Client.pm
+#         FILE: Clients.pm
 #
 #  DESCRIPTION: 
 #
@@ -13,12 +13,10 @@
 #      CREATED: 08/29/2012 01:37:17 PM
 #     REVISION: ---
 #===============================================================================
-
 use Modern::Perl;
-use Moose; 
 use MooseX::Declare;
 
-class P2I::Converter::Client extends P2I::Converter {
+class P2I::Converter::Clients extends P2I::Converter {
     use P2I::ISPconfigSOAP;
 
     method convert {

@@ -1,6 +1,6 @@
 #===============================================================================
 #
-#         FILE: Domain.pm
+#         FILE: Domains.pm
 #
 #  DESCRIPTION: 
 #
@@ -16,7 +16,7 @@
 use Modern::Perl;
 use MooseX::Declare;
 
-class P2I::Converter::Domain extends P2I::Converter {
+class P2I::Converter::Domains extends P2I::Converter {
     use P2I::ISPconfigSOAP;
 
     method convert {
