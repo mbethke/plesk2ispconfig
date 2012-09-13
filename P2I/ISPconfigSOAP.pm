@@ -19,13 +19,16 @@ use MooseX::Declare;
 
 class P2I::ISPconfigSOAP {
     use MooseX::ClassAttribute;
-    use MooseX::Types::URI qw/ Uri /;
-    use SOAP:::Lite;
+    use SOAP::Lite;
 
-    class_has [qw/ user pass /] => (is => 'rw', isa => 'Str');
-    class_has [qw/ uri proxy /] => (is => 'rw', isa => 'Uri');
-    class_has soap      => (is => 'ro', isa => 'SOAP:::Lite', lazy => 1, builder => '_init_soap');
+    class_has [qw/ user pass uri proxy /] => (is => 'rw', isa => 'Str');
+    class_has soap      => (is => 'ro', isa => 'SOAP::Lite', lazy => 1, builder => '_init_soap');
     class_has session   => (is => 'ro', isa => 'Str',         lazy => 1, builder => '_init_session');
+
+    method soap_call {
+        my $method = shift;
+        $self->soap->$method($self->session, @_);
+    }
 
     sub _init_soap {
         return SOAP::Lite
