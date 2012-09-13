@@ -17,7 +17,7 @@
 use Moose;
 use MooseX::Declare;
 
-class P2I::Client {
+class P2I::Data::Client {
     use MooseX::Types::DateTime::ButMaintained qw/ DateTime /;
 
     has id           => (is => 'ro', isa => 'Int');

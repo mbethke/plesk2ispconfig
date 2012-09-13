@@ -19,7 +19,6 @@ use Moose;
 use MooseX::Declare;
 
 class P2I::Converter::Client extends P2I::Converter {
-    use P2I::Client;
     use P2I::ISPconfigSOAP;
 
     method convert {

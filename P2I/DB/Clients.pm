@@ -14,10 +14,10 @@
 #     REVISION: ---
 #===============================================================================
 use MooseX::Declare;
-use P2I::PleskDB;
-use P2I::Client;
 
 class P2I::DB::Clients extends P2I::PleskDB {
+    use P2I::Data::Client;
+
     method list_parents {
         return $self->db->query(q[ SELECT id FROM clients WHERE parent_id IS NULL ORDER BY id ])->flat;
     }
@@ -27,7 +27,7 @@ class P2I::DB::Clients extends P2I::PleskDB {
     }
 
     method read_client(Int $id) {
-        return P2I::Client->new(
+        return P2I::Data::Client->new(
             $self->db->query(q[ SELECT * FROM clients WHERE id=? ], $id)->hash
         );
     }

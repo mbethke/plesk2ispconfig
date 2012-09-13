@@ -14,13 +14,13 @@
 #     REVISION: ---
 #===============================================================================
 use MooseX::Declare;
-use P2I::PleskDB;
-use P2I::Domain;
 
 class P2I::DB::Domains extends P2I::PleskDB {
+    use P2I::Data::Domain;
+    
     method get_domains {
         return map {
-            P2I::Domain->new(
+            P2I::Data::Domain->new(
                 domain_name => $_->{name},
                 client_name => $_->{cname},
             )
