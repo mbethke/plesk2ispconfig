@@ -21,19 +21,23 @@
 use strict;
 use warnings;
 use utf8;
-use SOAP::Lite;
-use DBIx::Simple;
-use P2I::PleskDB;
+use local::lib;
+use P2I::Types;
 use P2I::Converter::Client;
+use P2I::Converter::Domain;
+use P2I::DB::Clients;
+use P2I::DB::Domains;
 
-P2I::PleskDB->dsn('DBI:mysql:database=psa;host=127.0.0.1;port=13306');
-P2I::PleskDB->user('admin');
-P2I::PleskDB->pass('PLk^Wq7T8?C}By%6stMNezo3i');
+P2I::PleskDB->dsn('DBI:mysql:database=psa;host=127.0.0.1;port=3306');
+P2I::PleskDB->user('pleskuser');
+P2I::PleskDB->pass('foo');
 P2I::PleskDB->opts( {RaiseError => 1} );
 
-P2I::SOAP->user('admin');
-P2I::SOAP->pass('3UX7aEssnXtA');
-P2I::SOAP->location('http://mail2-de.zonarix.com:8080/remote/index.php');
-P2I::SOAP->uri('http://mail2-de.zonarix.com:8080/remote/');
+P2I::ISPconfigSOAP->user('admin');
+P2I::ISPconfigSOAP->pass('3UX7aEssnXtA');
+P2I::ISPconfigSOAP->proxy('https://mail2-de.zonarix.com:8080/remote/index.php');
+P2I::ISPconfigSOAP->uri('https://mail2-de.zonarix.com:8080/remote/');
 
-P2I::Converter::Client->new(P2I::DBClients->new, P2I::SOAP::Clients->new)->convert;
+my $soap = P2I::ISPconfigSOAP->new;
+#P2I::Converter::Client->new(db => P2I::DB::Clients->new, soap => $soap)->convert;
+P2I::Converter::Domain->new(db => P2I::DB::Domains->new, soap => $soap)->convert;
