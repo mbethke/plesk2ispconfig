@@ -13,8 +13,7 @@
 #      CREATED: 08/28/2012 11:11:03 PM
 #     REVISION: ---
 #===============================================================================
-
-use Moose; 
+use Modern::Perl;
 use MooseX::Declare;
 
 class P2I::PleskDB {
@@ -30,6 +29,8 @@ class P2I::PleskDB {
             or die "You have to define a `query_list' attribute in your subclass";
         return $self->db->query($query)->flat;
     }
+
+    method query { $self->db->query(@_) }
 
     sub _init_dbhandle {
         return DBIx::Simple->new(
