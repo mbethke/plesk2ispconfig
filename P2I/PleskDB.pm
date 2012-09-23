@@ -17,12 +17,7 @@ use Modern::Perl;
 use MooseX::Declare;
 
 class P2I::PleskDB {
-    use MooseX::ClassAttribute;
-    use DBIx::Simple;
-
-    class_has [qw/ dsn user pass /] => (is => 'rw', isa => 'Str');
-    class_has opts => (is => 'rw', isa => 'HashRef');
-    class_has db => (is => 'rw', isa => 'DBIx::Simple', lazy => 1, builder => '_init_dbhandle');
+    has db => (is => 'ro', isa => 'DBIx::Simple', required  => 1);
 
     method list {
         my $query = $self->query_list
@@ -31,13 +26,4 @@ class P2I::PleskDB {
     }
 
     method query { $self->db->query(@_) }
-
-    sub _init_dbhandle {
-        return DBIx::Simple->new(
-            __PACKAGE__->dsn,
-            __PACKAGE__->user,
-            __PACKAGE__->pass,
-            __PACKAGE__->opts
-        );
-    }
 }

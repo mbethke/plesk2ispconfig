@@ -21,10 +21,23 @@ class P2I::Converter {
     use Scalar::Util qw/ looks_like_number /;
     use Data::Dumper;
 
-    has db          => (is => 'ro', isa => 'P2I::PleskDB',       required => 1);
+    has db          => (is => 'ro',                              required => 1);
     has soap        => (is => 'ro', isa => 'P2I::ISPconfigSOAP', required => 1);
 
-    method soap_call { $self->soap->soap_call(@_) }
+    sub soap_call { shift->soap->soap_call(@_) }
+
+    method run(@modules) {
+        for my $mod (@modules) {
+            eval  <<"EOUSE";
+                use P2I::Converter::$mod;
+                use P2I::DB::$mod;
+EOUSE
+            "P2I::Converter::$mod"->new(
+                db      => "P2I::DB::$mod"->new(db => $self->db),
+                soap    => $self->soap
+            )->convert;
+        }
+    }
 
     method _map_fields($src, $dst, $map) {
         while(my ($dattr, $sattr) = each %$map) {

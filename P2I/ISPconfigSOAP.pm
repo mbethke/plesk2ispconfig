@@ -13,31 +13,37 @@
 #      CREATED: 08/29/2012 01:43:32 PM
 #     REVISION: ---
 #===============================================================================
-
-use Moose; 
+use Modern::Perl;
 use MooseX::Declare;
 
 class P2I::ISPconfigSOAP {
-    use MooseX::ClassAttribute;
-    use SOAP::Lite;
+    use SOAP::Lite trace =>  'all';
 
-    class_has [qw/ user pass uri proxy /] => (is => 'rw', isa => 'Str');
-    class_has soap      => (is => 'ro', isa => 'SOAP::Lite', lazy => 1, builder => '_init_soap');
-    class_has session   => (is => 'ro', isa => 'Str',         lazy => 1, builder => '_init_session');
+    has [qw/ user pass uri proxy /] => (is => 'rw', isa => 'Str', required => 1);
+    has soap      => (is => 'ro', isa => 'SOAP::Lite', lazy => 1, builder => '_init_soap');
+    has session   => (is => 'ro',                      lazy => 1, builder => '_init_session');
 
-    method soap_call {
-        my $method = shift;
-        $self->soap->$method($self->session, @_);
+    method soap_call($method, @args) {
+        return $self->_soap_or_die($method,  $self->session,  @args);
     }
 
-    sub _init_soap {
+    method _init_soap {
         return SOAP::Lite
-        -> uri(__PACKAGE__->uri)
-        -> proxy(__PACKAGE__->proxy);
+        -> default_ns($self->uri)
+        -> proxy($self->proxy,
+            ssl_opts => { verify_hostname => 0 },
+        );
     }
    
-    method _init_session {
-        return $self->soap->login($self->user, $self->pass);
+    method _init_session() {
+        return $self->_soap_or_die('login', $self->user, $self->pass);
+    }
+
+    method _soap_or_die($method, @args) {
+        say "calling SOAP->$method(",(join ",",@args),")";
+        my $som = $self->soap->call($method, @args);
+        die "SOAP error for method `$method': " . $som->faultstring if ($som->fault);
+        return $som->result;
     }
 }
 
