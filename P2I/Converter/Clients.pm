@@ -25,8 +25,8 @@ class P2I::Converter::Clients extends P2I::Converter {
         for my $id ($self->db->list_parents) {
             my %data;
             $self->_map_fields( $self->db->read_client($id), \%data, $self->_field_map );
-            say "SOAP: client_add $data{contact_name}";
-            my $newid = $self->soap_call('client_add', 1, \%data);
+            say "SOAP: client_add parent $data{username} ($data{contact_name})";
+            my $newid = $self->soap_call('client_add', 1, $self->hash2soap(\%data));
             say "soap done  [newID:$newid]";
             $parentmap{$data{id}} = $newid;
         }
@@ -36,8 +36,8 @@ class P2I::Converter::Clients extends P2I::Converter {
             my $record = $self->db->read_client($id);
             $self->_map_fields( $record, \%data, $self->_field_map );
             $data{parent_client_id} = $parentmap{$record->id};
-            say "SOAP: client_add $data{contact_name}";
-            $self->soap_call('client_add', 1, \%data);
+            say "SOAP: client_add dependent $data{username} ($data{contact_name})";
+            $self->soap_call('client_add', 1, $self->hash2soap(\%data));
         }
     }
     

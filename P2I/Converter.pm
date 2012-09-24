@@ -39,6 +39,8 @@ EOUSE
         }
     }
 
+    method hash2soap(HashRef $h) { $self->soap->hash2soap($h) }
+
     method _map_fields($src, $dst, $map) {
         while(my ($dattr, $sattr) = each %$map) {
             my $val;

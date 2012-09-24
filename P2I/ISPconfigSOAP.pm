@@ -17,7 +17,7 @@ use Modern::Perl;
 use MooseX::Declare;
 
 class P2I::ISPconfigSOAP {
-    use SOAP::Lite trace =>  'all';
+    use SOAP::Lite trace =>  [qw/ parameters /];
 
     has [qw/ user pass uri proxy /] => (is => 'rw', isa => 'Str', required => 1);
     has soap      => (is => 'ro', isa => 'SOAP::Lite', lazy => 1, builder => '_init_soap');
@@ -27,9 +27,14 @@ class P2I::ISPconfigSOAP {
         return $self->_soap_or_die($method,  $self->session,  @args);
     }
 
+    method hash2soap(HashRef $h) {
+        return SOAP::Data->new(type => 'Map')
+        ->value( map { SOAP::Data->name( $_ => $h->{$_}) } keys %$h);
+    }
+
     method _init_soap {
         return SOAP::Lite
-        -> default_ns($self->uri)
+        -> ns($self->uri)
         -> proxy($self->proxy,
             ssl_opts => { verify_hostname => 0 },
         );
