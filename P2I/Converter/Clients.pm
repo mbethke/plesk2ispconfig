@@ -18,6 +18,9 @@ use MooseX::Declare;
 
 class P2I::Converter::Clients extends P2I::Converter {
     use P2I::ISPconfigSOAP;
+    use constant DEFAULT_WEB_PHP_OPTIONS  => 'mod,fast-cgi,suphp'; # no,cgi
+    use constant DEFAULT_SSH_CHROOT       => 'no'; # jailkit
+    use constant DEFAULT_LIMIT_CRON_TYPE  => 'url';
 
     method convert {
         my %parentmap;
@@ -80,12 +83,12 @@ class P2I::Converter::Clients extends P2I::Converter {
             limit_web_ip            => undef,
             limit_web_domain        => -1,
             limit_web_quota         => -1,
-            web_php_options         => undef,
+            web_php_options         => \(DEFAULT_WEB_PHP_OPTIONS),
             limit_web_subdomain     => -1,
             limit_web_aliasdomain   => -1,
             limit_ftp_user          => -1,
             limit_shell_user        => 0,
-            ssh_chroot              => undef,
+            ssh_chroot              => \(DEFAULT_SSH_CHROOT),
             limit_webdav_user       => 0,
             default_dnsserver       => 1,
             limit_dns_zone          => -1,
@@ -94,7 +97,7 @@ class P2I::Converter::Clients extends P2I::Converter {
             default_dbserver        => 1,
             limit_database          => -1,
             limit_cron              => 0,
-            limit_cron_type         => undef,
+            limit_cron_type         => \(DEFAULT_LIMIT_CRON_TYPE),
             limit_cron_frequency    => 5,
             limit_traffic_quota     => -1,
             limit_client            => 0,

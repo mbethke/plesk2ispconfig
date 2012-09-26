@@ -30,6 +30,7 @@ my $db = DBIx::Simple->new(
     'pleskuser', 'foo',
      { RaiseError => 1 },
 );
+$db->query("SET CHARSET 'utf8'");
 
 my $soap = P2I::ISPconfigSOAP->new(
     #user =>  'admin',

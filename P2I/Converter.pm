@@ -28,10 +28,13 @@ class P2I::Converter {
 
     method run(@modules) {
         for my $mod (@modules) {
+            # TODO use some  plugin module here
             eval  <<"EOUSE";
                 use P2I::Converter::$mod;
                 use P2I::DB::$mod;
 EOUSE
+            $@ and die;
+
             "P2I::Converter::$mod"->new(
                 db      => "P2I::DB::$mod"->new(db => $self->db),
                 soap    => $self->soap
@@ -46,9 +49,10 @@ EOUSE
             my $val;
             for($sattr) {
                 when(undef)                 { $val = undef };
-                when(looks_like_number($_)) { $val = $sattr };
-                when(!length)               { $val = $sattr };
-                default                     { $val = $src->$sattr };
+                when(''  ne ref)            { $val = $$_ };
+                when(looks_like_number($_)) { $val = $_ };
+                when(!length)               { $val = $_ };
+                default                     { $val = $src->$_ };
             }
             $dst->{$dattr} = $val;
         }
