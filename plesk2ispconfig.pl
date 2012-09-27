@@ -41,5 +41,5 @@ my $soap = P2I::ISPconfigSOAP->new(
     uri     => 'http://192.168.56.101:8079/remote/',
 );
 
-#P2I::Converter->new(db => $db, soap => $soap)->run(qw/ Clients Domains /);
-P2I::Converter->new(db => $db, soap => $soap)->run(qw/ Domains /);
+P2I::Converter->new(db => $db, soap => $soap)->run(qw/ Clients Domains /);
+#P2I::Converter->new(db => $db, soap => $soap)->run(qw/ Domains /);

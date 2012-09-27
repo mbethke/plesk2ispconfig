@@ -31,7 +31,7 @@ class P2I::Converter::Clients extends P2I::Converter {
             next if 'admin' eq $data{username};
             say "SOAP: client_add parent $data{username} ($data{contact_name}):";
             #say "\t$_ => ",($data{$_}//'<undef>') for sort keys %data;
-            my $newid = $self->soap_call('client_add', 1, $self->soapize(\%data));
+            my $newid = $self->lather('client_add', 1, \%data);
             say "soap done  [newID:$newid]";
             $parentmap{$data{id}} = $newid;
         }
@@ -43,7 +43,7 @@ class P2I::Converter::Clients extends P2I::Converter {
             $data{parent_client_id} = $parentmap{$record->id};
             say "SOAP: client_add dependent $data{username} ($data{contact_name})";
             #say "\t$_ => ",($data{$_}//'<undef>') for sort keys %data;
-            $self->soap_call('client_add', 1, $self->soapize(\%data));
+            $self->lather('client_add', 1, \%data);
         }
     }
     

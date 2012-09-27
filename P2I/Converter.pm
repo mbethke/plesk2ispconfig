@@ -26,6 +26,10 @@ class P2I::Converter {
 
     sub soap_call { shift->soap->soap_call(@_) }
 
+    method lather(Str $method, @params) {
+        $self->soap_call($method, map { $self->soapize($_) } @params);
+    }
+
     method run(@modules) {
         for my $mod (@modules) {
             # TODO use some  plugin module here

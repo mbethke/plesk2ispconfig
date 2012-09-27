@@ -25,12 +25,12 @@ class P2I::ISPconfigSOAP {
     has session   => (is => 'ro',                      lazy => 1, builder => '_init_session');
 
     method soap_call($method, @args) {
-        return $self->_soap_or_die($method,  $self->session,  @args);
+        return $self->_soap_or_die($method, $self->session, @args);
     }
 
     method soapize($d) {
         'HASH'  eq ref($d) and return SOAP::Data->type(map => $d);
-        'ARRAY' eq ref($d) and die "Check correct conversion";
+        'ARRAY' eq ref($d) and die "TODO: check correct conversion for SOAP arrays";
         return $d;  # Everything else should be correctly handled
     }
 
