@@ -16,7 +16,6 @@
 use MooseX::Declare;
 
 class P2I::Data::Domain {
-    has domain_name => (is => 'ro', isa => 'Str');
-    has client_name => (is => 'ro', isa => 'Str');
+    has [qw/ domain_name login /] => (is => 'ro', isa => 'Str');
 }
 

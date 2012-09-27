@@ -18,6 +18,7 @@ use MooseX::Declare;
 
 class P2I::ISPconfigSOAP {
     use SOAP::Lite ;#trace =>  [qw/ parameters debug /];
+    use Data::Dumper;
 
     has [qw/ user pass uri proxy /] => (is => 'rw', isa => 'Str', required => 1);
     has soap      => (is => 'ro', isa => 'SOAP::Lite', lazy => 1, builder => '_init_soap');
