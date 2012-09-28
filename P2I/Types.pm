@@ -1,16 +1,18 @@
 package P2I::Types;
-use v5.10;
-use Moose::Util::TypeConstraints;
+use Modern::Perl;
+use MooseX::Types -declare => [ qw/ MysqlDateTime MysqlBool / ];
+use MooseX::Types::Moose qw/ Bool Str /;
+use MooseX::Types::DateTime::ButMaintained qw/ DateTime /;
 use DateTime::Format::MySQL;
 
-subtype 'P2I::MysqlDateTime', as 'DateTime';
-coerce 'P2I::MysqlDateTime',
-    from 'Str',
+subtype MysqlDateTime, as DateTime;
+coerce MysqlDateTime,
+    from Str,
     via { DateTime::Format::MySQL->parse_date(shift) };
 
-subtype 'P2I::MysqlBool', as 'Bool';
-coerce 'P2I::MysqlBool',
-    from 'Str',
+subtype MysqlBool, as Bool;
+coerce MysqlBool,
+    from Str,
     via {
         given(lc shift) {
             return 1 when 'true';

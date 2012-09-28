@@ -20,7 +20,6 @@
 use utf8;
 use local::lib;
 use Modern::Perl;
-use P2I::Types;
 use DBIx::Simple;
 use P2I::ISPconfigSOAP;
 use P2I::Converter;
@@ -41,5 +40,5 @@ my $soap = P2I::ISPconfigSOAP->new(
     uri     => 'http://192.168.56.101:8079/remote/',
 );
 
-P2I::Converter->new(db => $db, soap => $soap)->run(qw/ Clients Domains /);
+P2I::Converter->new(db => $db, soap => $soap)->run(qw/ Clients Domains Mail /);
 #P2I::Converter->new(db => $db, soap => $soap)->run(qw/ Domains /);
