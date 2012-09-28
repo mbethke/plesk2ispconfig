@@ -1,17 +1,3 @@
-#===============================================================================
-#
-#         FILE: Domains.pm
-#
-#  DESCRIPTION: 
-#
-#         BUGS: ---
-#        NOTES: ---
-#       AUTHOR: Matthias Bethke (mbethke), matthias@towiski.de
-# ORGANIZATION: 
-#      VERSION: 1.0
-#      CREATED: 09/11/2012 09:50:11 PM
-#     REVISION: ---
-#===============================================================================
 use Modern::Perl;
 use MooseX::Declare;
 

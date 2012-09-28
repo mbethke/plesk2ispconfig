@@ -1,20 +1,4 @@
-#===============================================================================
-#
-#         FILE: Client.pm
-#
-#  DESCRIPTION:
-#
-#        FILES: ---
-#         BUGS: ---
-#        NOTES: ---
-#       AUTHOR: Matthias Bethke (mbethke), matthias@towiski.de
-# ORGANIZATION:
-#      VERSION: 1.0
-#      CREATED: 08/29/2012 10:41:34 AM
-#     REVISION: ---
-#===============================================================================
-
-use Moose;
+use Modern::Perl;
 use MooseX::Declare;
 
 class P2I::Data::Client {

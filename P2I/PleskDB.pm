@@ -1,18 +1,3 @@
-#===============================================================================
-#
-#         FILE: PleskDB.pm
-#
-#  DESCRIPTION: 
-#
-#        FILES: ---
-#         BUGS: ---
-#        NOTES: ---
-#       AUTHOR: Matthias Bethke (mbethke), matthias@towiski.de
-# ORGANIZATION: 
-#      VERSION: 1.0
-#      CREATED: 08/28/2012 11:11:03 PM
-#     REVISION: ---
-#===============================================================================
 use Modern::Perl;
 use MooseX::Declare;
 

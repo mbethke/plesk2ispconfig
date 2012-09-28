@@ -1,18 +1,4 @@
-#===============================================================================
-#
-#         FILE: Domains.pm
-#
-#  DESCRIPTION: 
-#
-#        FILES: ---
-#         BUGS: ---
-#        NOTES: ---
-#       AUTHOR: Matthias Bethke (mbethke), matthias@towiski.de
-# ORGANIZATION: 
-#      VERSION: 1.0
-#      CREATED: 09/11/2012 09:59:12 PM
-#     REVISION: ---
-#===============================================================================
+use Modern::Perl;
 use MooseX::Declare;
 
 class P2I::DB::Domains extends P2I::PleskDB {
