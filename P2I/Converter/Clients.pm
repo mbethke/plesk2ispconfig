@@ -1,26 +1,21 @@
-#===============================================================================
-#
-#         FILE: Clients.pm
-#
-#  DESCRIPTION: 
-#
-#        FILES: ---
-#         BUGS: ---
-#        NOTES: ---
-#       AUTHOR: Matthias Bethke (mbethke), matthias@towiski.de
-# ORGANIZATION: 
-#      VERSION: 1.0
-#      CREATED: 08/29/2012 01:37:17 PM
-#     REVISION: ---
-#===============================================================================
 use Modern::Perl;
 use MooseX::Declare;
 
 class P2I::Converter::Clients extends P2I::Converter {
     use P2I::ISPconfigSOAP;
+
     use constant DEFAULT_WEB_PHP_OPTIONS  => 'mod,fast-cgi,suphp'; # no,cgi
     use constant DEFAULT_SSH_CHROOT       => 'no'; # jailkit
     use constant DEFAULT_LIMIT_CRON_TYPE  => 'url';
+
+    {
+        use Digest::MD5 'md5_hex';
+        # TODO pester the  ISPconfig guys to fix this. MD5 hashing is insecure!
+        sub password_to_md5 {
+            defined(my $pw = shift) or return;  # only try to convert defined passwords
+            return md5_hex($pw);
+        }
+    }
 
     method convert {
         my %parentmap;
@@ -103,7 +98,7 @@ class P2I::Converter::Clients extends P2I::Converter {
             limit_client            => 0,
             parent_client_id        => undef,
             username                => 'login',
-            password                => undef,
+            password                => \&password_to_md5,
             language                => 'locale',
             usertheme               => undef,
             template_master         => 0,

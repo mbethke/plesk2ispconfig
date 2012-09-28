@@ -31,5 +31,6 @@ class P2I::Data::Client {
     has sapp_pool_id => (is => 'ro', isa => 'Maybe[Int]');
     has guid         => (is => 'ro', isa => 'Str');
     has overuse      => (is => 'ro', isa => 'P2I::MysqlBool', coerce => 1);
+    has password     => (is => 'ro', isa => 'Maybe[Str]');
 }
 

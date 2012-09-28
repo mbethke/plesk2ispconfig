@@ -14,7 +14,12 @@ class P2I::DB::Clients extends P2I::PleskDB {
 
     method read_client(Int $id) {
         return P2I::Data::Client->new(
-            $self->query_hash(q[ SELECT * FROM clients WHERE id=? ], $id)
+            $self->query_hash(q[
+                SELECT c.*,a.password
+                FROM clients c LEFT JOIN accounts a ON c.account_id=a.id
+                WHERE c.id=? ],
+                $id
+            )
         );
     }
 }

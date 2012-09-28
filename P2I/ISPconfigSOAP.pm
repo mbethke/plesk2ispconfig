@@ -33,7 +33,7 @@ class P2I::ISPconfigSOAP {
     }
 
     method _soap_or_die($method, @args) {
-        say "calling SOAP->$method(",(join ",",@args),")";
+        #say "calling SOAP->$method(",(join ",",@args),")";
         my $som = $self->soap->call($method, @args);
         die "SOAP error for method `$method': " . $som->faultstring if ($som->fault);
         return $som->result;

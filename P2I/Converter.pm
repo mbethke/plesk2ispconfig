@@ -38,7 +38,8 @@ EOUSE
             my $val;
             for($sattr) {
                 when(undef)                 { $val = undef };
-                when(''  ne ref)            { $val = $$_ };
+                when('CODE' eq ref)         { $val = $_->($src) };
+                when('SCALAR' eq ref)       { $val = $$_ };
                 when(looks_like_number($_)) { $val = $_ };
                 when(!length)               { $val = $_ };
                 default                     { $val = $src->$_ };
