@@ -28,4 +28,12 @@ class P2I::PleskDB {
         $_ = decode('utf8', $_) for(values %$h);
         return $h;
     }
+
+    # Query a list of result hashes and decode values to UTF8
+    method query_hashes(@args) {
+        return map {
+            $_ = decode('utf8', $_) for(values %$_);
+            $_;
+        } $self->db->query(@args)->hashes;
+    }
 }

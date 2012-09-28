@@ -10,6 +10,6 @@ class P2I::DB::Domains extends P2I::PleskDB {
                 domain_name => $_->{name},
                 login       => $_->{login},
             )
-        } $self->db->query(q[ SELECT name,login FROM domains JOIN clients c ON cl_id=c.id])->hashes;
+        } $self->query_hashes(q[ SELECT name,login FROM domains JOIN clients c ON cl_id=c.id ]);
     }
 }
