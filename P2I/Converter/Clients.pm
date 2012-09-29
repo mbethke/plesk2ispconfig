@@ -10,10 +10,15 @@ class P2I::Converter::Clients extends P2I::Converter {
 
     {
         use Digest::MD5 'md5_hex';
-        # TODO pester the  ISPconfig guys to fix this. MD5 hashing is insecure!
+        # TODO pester the ISPconfig guys to fix this. MD5 hashing is insecure!
         sub password_to_md5 {
-            defined(my $pw = shift) or return;  # only try to convert defined passwords
-            return md5_hex($pw);
+            my $d = shift;
+            my $pw = $d->{password};
+            return unless defined $pw;  # only try to convert defined passwords
+            given($d->{password_type}) {
+                return md5_hex($pw) when 'plain';
+                die "Unhandled password type $d->{password_type}";
+            }
         }
     }
 
