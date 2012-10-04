@@ -1,7 +1,7 @@
 use Modern::Perl;
 use MooseX::Declare;
 
-class P2I::Data::Client {
+class P2I::Data::Client with P2I::Password {
     use MooseX::Types::DateTime::ButMaintained qw/ DateTime /;
     use MooseX::Types::Moose ':all';
     use P2I::Types ':all';
@@ -33,8 +33,5 @@ class P2I::Data::Client {
     has sapp_pool_id => (is => 'ro', isa => Maybe[Int], required => 1);
     has guid         => (is => 'ro', isa => Str, required => 1);
     has overuse      => (is => 'ro', isa => MysqlBool, coerce => 1, required => 1);
-    has password     => (is => 'ro', isa => Maybe[Str], required => 1);
-    #has password_type=> (is => 'ro', isa => enum([qw/ plain /], required => 1); # TODO what are the other valid types
-    has password_type=> (is => 'ro', isa => Maybe[Str], required => 1); # will die in conversion rather than assignment like this
 }
 

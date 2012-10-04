@@ -8,20 +8,6 @@ class P2I::Converter::Clients extends P2I::Converter {
     use constant DEFAULT_SSH_CHROOT       => 'no'; # jailkit
     use constant DEFAULT_LIMIT_CRON_TYPE  => 'url';
 
-    {
-        use Digest::MD5 'md5_hex';
-        # TODO pester the ISPconfig guys to fix this. MD5 hashing is insecure!
-        sub password_to_md5 {
-            my $d = shift;
-            my $pw = $d->{password};
-            return unless defined $pw;  # only try to convert defined passwords
-            given($d->{password_type}) {
-                return md5_hex($pw) when 'plain';
-                die "Unhandled password type $d->{password_type}";
-            }
-        }
-    }
-
     method convert {
         my %parentmap;
 
@@ -103,7 +89,7 @@ class P2I::Converter::Clients extends P2I::Converter {
             limit_client            => 0,
             parent_client_id        => undef,
             username                => 'login',
-            password                => \&password_to_md5,
+            password                => 'mangled_password',
             language                => 'locale',
             usertheme               => undef,
             template_master         => 0,

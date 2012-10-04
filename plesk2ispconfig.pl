@@ -24,6 +24,21 @@ use DBIx::Simple;
 use P2I::ISPconfigSOAP;
 use P2I::Converter;
 
+my $config = {
+    server => {
+        mail => '5.9.28.24',
+        web  => '5.9.35.102',
+    },
+    defaults => {
+        mail => {
+            uid     => 5000,
+            gid     => 5000,
+            homedir => '/var/vmail',
+            maildir => '/var/vmail/%d/%a',
+        }
+    }
+};
+
 my $db = DBIx::Simple->new(
     'DBI:mysql:database=psa;host=127.0.0.1;port=3306',
     'pleskuser', 'foo',
@@ -36,9 +51,12 @@ my $soap = P2I::ISPconfigSOAP->new(
     #pass => '3UX7aEssnXtA',
     user    => 'apiuser',
     pass    => '123456',
-    proxy   => 'http://192.168.56.101:8079/remote/index.php',
-    uri     => 'http://192.168.56.101:8079/remote/',
+    proxy   => 'http://192.168.56.3:8079/remote/index.php',
+    uri     => 'http://192.168.56.3:8079/remote/',
 );
 
-P2I::Converter->new(db => $db, soap => $soap)->run(qw/ Clients Domains Mail /);
-#P2I::Converter->new(db => $db, soap => $soap)->run(qw/ Domains /);
+P2I::Converter->new(
+    db => $db,
+    soap => $soap,
+    config => $config,
+)->run(qw/ Clients Mail /); #Domains

@@ -1,6 +1,6 @@
 package P2I::Types;
 use Modern::Perl;
-use MooseX::Types -declare => [ qw/ MysqlDateTime MysqlBool / ];
+use MooseX::Types -declare => [ qw/ MysqlDateTime MysqlBool Bigint / ];
 use MooseX::Types::Moose qw/ Bool Str /;
 use MooseX::Types::DateTime::ButMaintained qw/ DateTime /;
 use DateTime::Format::MySQL;
@@ -20,3 +20,7 @@ coerce MysqlBool,
             die 'MysqlBool bust be "true" or "false"';
         }
     };
+
+subtype Bigint,
+    as Str,
+    where { /^[-+]?\d+$/ };
