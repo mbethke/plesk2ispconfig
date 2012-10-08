@@ -1,5 +1,6 @@
 use Modern::Perl;
 use MooseX::Declare;
+use Method::Signatures::Modifiers;
 
 class P2I::ISPconfigSOAP {
     use SOAP::Lite ;#trace =>  [qw/ parameters debug /];
@@ -9,7 +10,8 @@ class P2I::ISPconfigSOAP {
     has soap      => (is => 'ro', isa => 'SOAP::Lite', lazy => 1, builder => '_init_soap');
     has session   => (is => 'ro',                      lazy => 1, builder => '_init_session');
 
-    method soap_call($method, @args) {
+    method soap_call(Str $method, @args) {
+        print STDERR "SOAP call: $method\n";
         return $self->_soap_or_die($method, $self->session, @args);
     }
 
