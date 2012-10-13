@@ -6,12 +6,6 @@ class P2I::PleskDB {
 
     has db => (is => 'ro', isa => 'DBIx::Simple', required  => 1);
 
-    method list {
-        my $query = $self->query_list
-            or die "You have to define a `query_list' attribute in your subclass";
-        return $self->db->query($query)->flat;
-    }
-
     # Run a DBIx::Simple query and return its result object. You'll have to do
     # the charset decoding yourself!
     method query { $self->db->query(@_) }

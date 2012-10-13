@@ -25,8 +25,10 @@ coerce MysqlBool,
 
 subtype Bigint,
     as Str,
-    where { /^[-+]?\d+$/ };
+    where { /^[-+]?\d+$/ },
+    message { "Not a valid big integer" };
 
 subtype IPAddress,
     as Str,
-    where { /^$RE{net}{IPv4}$/ or /^$IPv6_re$/ }; 
+    where { /^$RE{net}{IPv4}$/ or /^$IPv6_re$/ },
+    message { "Not a valid IPv4 or IPv6 address" };

@@ -3,7 +3,7 @@ use MooseX::Declare;
 use Method::Signatures::Modifiers;
 
 class P2I::ISPconfigSOAP {
-    use SOAP::Lite ;#trace =>  [qw/ parameters debug /];
+    use SOAP::Lite; # trace =>  [qw/ parameters debug /];
     use Data::Dumper;
 
     has [qw/ user pass uri proxy /] => (is => 'rw', isa => 'Str', required => 1);

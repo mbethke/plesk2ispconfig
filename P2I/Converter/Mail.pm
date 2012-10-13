@@ -4,6 +4,7 @@ use Method::Signatures::Modifiers;
 
 class P2I::Converter::Mail extends P2I::Converter {
     use MooseX::Types::Moose ':all';
+    use P2I::Types qw/ IPAddress /;
     use Moose::Util::TypeConstraints;
     use Data::Dumper;
     use P2I::ISPconfigSOAP;
@@ -50,7 +51,6 @@ class P2I::Converter::Mail extends P2I::Converter {
             my %data;
             # Create a mailbox
             $self->_map_fields($mbox, \%data, $self->_field_map);
-            $data{server_id} = $self->server_id;
             $self->lather('mail_user_add', $client_id, \%data);
         }
     }
@@ -74,13 +74,11 @@ class P2I::Converter::Mail extends P2I::Converter {
     }
 
     method _build_mail_server_id {
-        my $srvs = $self->lather('server_get_serverid_by_ip', $self->config->{server}{mail});
-        die "Mail server @{[ $self->config->{server}{mail} ]} not found" unless @$srvs;
-        return $srvs->[0]{server_id};
+        return $self->get_server_id($self->config->{server}{mail});
     }
 
-       # TODO move this to P2I::Data::Mail::Box
-       method _field_map {
+    # TODO move this to P2I::Data::Mail::Box
+    method _field_map {
         my $def = $self->config->{defaults}{mail};
         return {
             email                   => 'email',
@@ -105,6 +103,7 @@ class P2I::Converter::Mail extends P2I::Converter {
             disablepop3     => \'n',
             disabledeliver  => \'n',
             disablesmtp     => \'n',
+            server_id       => sub { \$self->server_id },
         };
     }
 

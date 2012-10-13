@@ -35,7 +35,17 @@ my $config = {
             gid     => 5000,
             homedir => '/var/vmail',
             maildir => '/var/vmail/%d/%a',
-        }
+        },
+        web => {
+            ruby                => 'y',
+            suexec              => 'y',
+            traffic_quota_lock  => 'n',
+            allow_override      => 'All',
+            ip_map              => {
+                '74.208.209.127' => '5.9.35.102',
+                '74.208.209.129' => '5.9.35.102',
+            }
+        },
     }
 };
 
@@ -59,4 +69,5 @@ P2I::Converter->new(
     db => $db,
     soap => $soap,
     config => $config,
-)->run(qw/ Clients Mail /); #Domains
+#)->run(qw/ Clients Domains Mail Websites /);
+)->run(qw/ Clients Websites /);

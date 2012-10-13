@@ -5,11 +5,19 @@ class P2I::DB::Clients extends P2I::PleskDB {
     use P2I::Data::Client;
 
     method list_parents {
-        return $self->query_flat(q[ SELECT id FROM clients WHERE parent_id IS NULL ORDER BY id ]);
+        return $self->query_flat(q[
+            SELECT id
+            FROM clients
+            WHERE parent_id IS NULL
+            ORDER BY id ]);
     }
 
     method list_dependents {
-        return $self->query_flat(q[ SELECT id FROM clients WHERE parent_id IS NOT NULL ORDER BY id ]);
+        return $self->query_flat(q[
+            SELECT id
+            FROM clients
+            WHERE parent_id IS NOT NULL
+            ORDER BY id ]);
     }
 
     method read_client(Int $id) {
@@ -20,6 +28,15 @@ class P2I::DB::Clients extends P2I::PleskDB {
                 WHERE c.id=? ],
                 $id
             )
+        );
+    }
+
+    method read_permissions(Int $id) {
+        return $self->query_hashes(q[
+            SELECT permission, value
+            FROM Permissions
+            WHERE id=? ],
+            $id
         );
     }
 }
