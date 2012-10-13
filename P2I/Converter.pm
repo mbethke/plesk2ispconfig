@@ -8,8 +8,8 @@ class P2I::Converter {
     use Scalar::Util qw/ looks_like_number /;
     use Data::Dumper;
 
-    has config      => (is => 'ro', isa => HashRef,              required => 1);
-    has db          => (is => 'ro',                              required => 1);
+    has config      => (is => 'ro', isa => 'P2I::Config', required => 1);
+    has db          => (is => 'ro',                       required => 1);
     has soap        => (
         is      => 'ro',
         isa     => 'P2I::ISPconfigSOAP',

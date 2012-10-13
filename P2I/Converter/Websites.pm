@@ -24,11 +24,11 @@ class P2I::Converter::Websites extends P2I::Converter {
     }
 
     method _build_web_server_id {
-        return $self->get_server_id($self->config->{server}{web});
+        return $self->get_server_id($self->config->server('web'));
     }
 
     method _field_map {
-        my $def = $self->config->{defaults}{web};
+        my $def = $self->config->defaults('web');
         return {
             server_id           => \$self->server_id,
             ip_address          => sub { $def->{ip_map}{$_[0]->ip_address} },

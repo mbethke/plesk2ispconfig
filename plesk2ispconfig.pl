@@ -23,31 +23,7 @@ use Modern::Perl;
 use DBIx::Simple;
 use P2I::ISPconfigSOAP;
 use P2I::Converter;
-
-my $config = {
-    server => {
-        mail => '5.9.28.24',
-        web  => '5.9.35.102',
-    },
-    defaults => {
-        mail => {
-            uid     => 5000,
-            gid     => 5000,
-            homedir => '/var/vmail',
-            maildir => '/var/vmail/%d/%a',
-        },
-        web => {
-            ruby                => 'y',
-            suexec              => 'y',
-            traffic_quota_lock  => 'n',
-            allow_override      => 'All',
-            ip_map              => {
-                '74.208.209.127' => '5.9.35.102',
-                '74.208.209.129' => '5.9.35.102',
-            }
-        },
-    }
-};
+use P2I::Config;
 
 my $db = DBIx::Simple->new(
     'DBI:mysql:database=psa;host=127.0.0.1;port=3306',
@@ -64,6 +40,8 @@ my $soap = P2I::ISPconfigSOAP->new(
     proxy   => 'http://192.168.56.3:8079/remote/index.php',
     uri     => 'http://192.168.56.3:8079/remote/',
 );
+
+my $config = P2I::Config->new(name => 'config.yml');
 
 P2I::Converter->new(
     db => $db,

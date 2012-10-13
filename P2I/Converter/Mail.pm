@@ -74,12 +74,12 @@ class P2I::Converter::Mail extends P2I::Converter {
     }
 
     method _build_mail_server_id {
-        return $self->get_server_id($self->config->{server}{mail});
+        return $self->get_server_id($self->config->server('mail'));
     }
 
     # TODO move this to P2I::Data::Mail::Box
     method _field_map {
-        my $def = $self->config->{defaults}{mail};
+        my $def = $self->config->defaults('mail');
         return {
             email                   => 'email',
             login                   => 'email',
