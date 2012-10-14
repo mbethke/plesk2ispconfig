@@ -8,22 +8,21 @@ defaults:
   web:
     allow_override: All
     ip_map:
-      74.208.209.127: 5.9.35.102
-      74.208.209.129: 5.9.35.102
+      1.2.3.4: 5.6.7.8
     ruby: y
     suexec: y
     traffic_quota_lock: n
 server:
-  mail: 5.9.28.24
-  web: 5.9.35.102
+  mail: 1.2.3.4
+  web: 1.2.3.4
 plesk:
   db: psa
   host: 127.0.0.1
   port: 3306
   user: pleskuser
-  pass: foo
+  pass: pleskpass
 ispconfig:
-  uri: http://192.168.56.3:8079/remote/
-  proxy: http://192.168.56.3:8079/remote/index.php
+  uri: http://localhost:8079/remote/
+  proxy: http://localhost:8079/remote/index.php
   user: apiuser
   pass: 123456

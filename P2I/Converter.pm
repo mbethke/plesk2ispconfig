@@ -8,8 +8,8 @@ class P2I::Converter {
     use Scalar::Util qw/ looks_like_number /;
     use Data::Dumper;
 
-    has config      => (is => 'ro', isa => 'P2I::Config', required => 1);
-    has db          => (is => 'ro',                       required => 1);
+    has config      => (is => 'ro', isa => 'P2I::Config',  required => 1);
+    has db          => (is => 'ro', isa => 'P2I::PleskDB', required => 1);
     has soap        => (
         is      => 'ro',
         isa     => 'P2I::ISPconfigSOAP',
@@ -20,25 +20,6 @@ class P2I::Converter {
     # Make a SOAP call, automatically converting all arguments via soapize()
     method lather(Str $method, @params) {
         $self->soap_call($method, map { $self->soapize($_) } @params);
-    }
-
-    # This is the main entry point. Loads all converter modules and runs
-    # ->convert on them.
-    method run(@modules) {
-        for my $mod (@modules) {
-            # TODO use some  plugin module here
-            eval  <<"EOUSE";
-                use P2I::Converter::$mod;
-                use P2I::DB::$mod;
-EOUSE
-            $@ and die;
-
-            "P2I::Converter::$mod"->new(
-                db      => "P2I::DB::$mod"->new(db => $self->db),
-                soap    => $self->soap,
-                config  => $self->config,
-            )->convert;
-        }
     }
 
     method get_client_id(Str $login) {
