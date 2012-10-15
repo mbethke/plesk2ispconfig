@@ -1,0 +1,114 @@
+NAME
+        plesk2ispconfig - convert Plesk datbases to ISPconfig
+
+
+SYNOPSIS
+        plesk2ispconfig [--config=file.yml]
+
+
+DESCRIPTION
+
+This script will convert the most tedious parts of your Plesk installation to
+ISPconfig, namely client accounts, mail addresses (mailboxes, aliases and
+forwards) and web sites. You configure it through a simple config file, mainly
+for the crendetials to access your installations and your server addresses, and
+the rest should be fully automatic.
+
+
+CONFIGURATION
+
+Configuration is through a file written in YAML (http://yaml.org). The default
+looks like this---just replace the values in there but don't change the format.
+The script validates the contnts though to make sure everything it needs is
+there.
+
+---
+defaults:
+  mail:
+    gid: 5000
+    homedir: /var/vmail
+    maildir: /var/vmail/%d/%a
+    uid: 5000
+  web:
+    allow_override: All
+    ip_map:
+      1.2.3.4: 5.6.7.8
+    ruby: y
+    suexec: y
+    traffic_quota_lock: n
+server:
+  mail: 1.2.3.4
+  web: 1.2.3.4
+plesk:
+  db: psa
+  host: 127.0.0.1
+  port: 3306
+  user: pleskuser
+  pass: pleskpass
+ispconfig:
+  uri: http://localhost:8079/remote/
+  proxy: http://localhost:8079/remote/index.php
+  user: apiuser
+  pass: 123456
+
+The "plesk" and "ispconfig" sections should be self-explanatory: they specify
+how to access your respective installations. While ISPconfig has a reasonably
+easy SOAP interface (in as far as that can be said about *any* SOAP interface),
+Plesk's homegrown "XML RPC" is a complete train wreck so I speak SQL directly to
+its database. This has only been tested with Plesk 9 though!
+
+The "server" section simply specifies your ISPconfig server IPs. If you have
+only one server for mail and web, just specify the same address twice.
+
+The "defaults" contain setting that are found in IsPconfig but not directly
+equivalent in Plesk. The following might need explanation:
+ip_map: map old Plesk web server IPs to new ISPconfig ones. If you had several
+        IPs and your sites distributed across them, this will recreate the
+        same distribution in ISPconfig.
+allow_override: Apache-style directive as you'd put into an .htaccess file for
+        every site.
+maildir: A printf-style string that has "%d" replaced by the mail domain and
+        "%a" by the account name. Some people prefer the full mail address in
+        the final part, like "/var/vmail/%d/%a@%d", or for very small sites
+        "/var/vmail/%a@%d"
+
+BUGS AND LIMITATONS
+
+Many. This should be considered alpha-quality software  as many things are not
+quite finished or  even begun:
+- The database format may have changed  in Plesk 10 and cause  things to break.
+  If you have a Plesk10 installation that you'd like to convert, send me a dump
+  (edit out your  passwords though, they are stored in clear text) and I'll have
+  a look.
+- Client databases and name servers are not supported yet.
+- Web stats should be preserved if using the same system (webalizer, awstats
+  etc.) on both installations, but are not.
+- You still have to rsync your actual web site contens manually. While this is a
+  difficult thing to do  because ISPconfig  uses asynchronous jobs to create
+  config and site directories (so the directory to sync to will likely appear
+  several minutes after I created the database entry), I could at  least
+  generate a script to run later.
+- Error handling is rather crude.
+
+
+REQUIREMENTS
+        Perl and the following modules:
+        Modern::Perl
+        Moose
+        MooseX::Declare
+        MooseX::Types
+        MooseX::Types::DateTime::ButMaintained
+        List::MoreUtils
+        Method::Signatures::Modifiers
+        DateTime::Format::MySQL
+        Data::Dumper
+        DBIx::Simple
+        Digest::MD5
+        Scalar::Util
+        SOAP::Lite
+        YAML
+        Regexp::Common
+        Regexp::IPv6
+
+AUTHOR
+	Matthias Bethke <matthias@towiski.de>
