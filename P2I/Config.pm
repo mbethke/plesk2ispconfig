@@ -1,3 +1,5 @@
+use Modern::Perl;
+use 5.10.1;
 use MooseX::Declare;
 
 class P2I::Config {
@@ -7,26 +9,26 @@ class P2I::Config {
     use YAML;
     use List::MoreUtils qw/ any /;
 
-    has name => (is => 'ro', isa => Str, required => 1);
-    has data => (is => 'ro', isa => HashRef, lazy => 1, builder => '_load_config');
+    has name        => (is => 'ro', isa => Str, required => 1);
+    has _data       => (is => 'ro', isa => HashRef, lazy => 1, builder => '_load_config');
+    has do_domains  => (is => 'rw', isa => ArrayRef);
 
     method server(Str $type) {
         croak("type arg must be `mail' or `web'")
-            unless any { $_ eq $type } qw/ mail web /;
-        return $self->data->{server}{$type};
+            unless $type ~~ [qw/ mail web /];
+        return $self->_data->{server}{$type};
     }
 
     method defaults(Str $type) {
         croak("type arg must be `mail' or `web'")
-            unless any { $_ eq $type } qw/ mail web /;
-        return $self->data->{defaults}{$type};
+            unless $type ~~ [qw/ mail web /];
+        return $self->_data->{defaults}{$type};
     }
 
-    method plesk        { return $self->data->{plesk}; }
-    method ispconfig    { return $self->data->{ispconfig}; }
+    method plesk        { return $self->_data->{plesk}; }
+    method ispconfig    { return $self->_data->{ispconfig}; }
 
     method _load_config {
-        printf STDERR "Inst config from %s\n",$self->name;
         my $check = {
             server => { mail => 1, web => 1 },
             defaults => {

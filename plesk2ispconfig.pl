@@ -7,15 +7,11 @@
 #
 #  DESCRIPTION: Migrate stuff from Plesk to ISPconfig3
 #
-#      OPTIONS: ---
-# REQUIREMENTS: ---
-#         BUGS: ---
-#        NOTES: ---
+#      OPTIONS: [--config=FILE] [--listmodules] [--modules=MODULE[,MODULE ...]]
 #       AUTHOR: Matthias Bethke (mbethke), matthias@towiski.de
-# ORGANIZATION: 
-#      VERSION: 1.0
+# ORGANIZATION: Zonarix S.A.
+#      VERSION: 0.1
 #      CREATED: 08/28/2012 11:06:28 PM
-#     REVISION: ---
 #===============================================================================
 use local::lib;
 use Modern::Perl;

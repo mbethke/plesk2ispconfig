@@ -8,12 +8,8 @@ class P2I::App with MooseX::Getopt {
     use P2I::Config;
 
     has config      => (is => 'rw', isa => Str, default => 'config.yml');
-    has _modules    => (
-        is      => 'ro',
-        isa     => Str,
-        default => 'Clients,Domains,Mail,Websites',
-        reader  => 'modules',
-    );
+    has modules     => (is => 'rw', isa => Str, default => 'Clients,Domains,Mail,Websites');
+    has listmodules => (is => 'rw', isa => Bool, default => 0);
     has _cfgdata => (
         is      => 'ro',
         isa     => 'P2I::Config',
@@ -37,8 +33,15 @@ class P2I::App with MooseX::Getopt {
     );
 
     method run {
-        $self->db->query("SET CHARSET 'utf8'");
+        # Just list the default plus the Listdomains module and exit
+        if($self->listmodules) {
+            my $mods = $self->modules;
+            $mods =~ s/,/\n/g;
+            print "Listdomains\n$mods\n";
+            exit 0;
+        }
 
+        $self->db->query("SET CHARSET 'utf8'");
         for my $mod (split /,/, $self->modules) {
             # TODO use some  plugin module here
             eval  <<"EOUSE";
@@ -56,7 +59,6 @@ EOUSE
     }
 
     method _build_cfgdata {
-        printf STDERR "Instantiating config from %s\n",$self->config;
         P2I::Config->new(name => $self->config);
     }
 
