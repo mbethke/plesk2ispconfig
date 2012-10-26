@@ -6,7 +6,7 @@ class P2I::Converter {
     use P2I::Types qw/ IPAddress /;
     use P2I::PleskDB;
     use Scalar::Util qw/ looks_like_number /;
-    use Data::Dumper;
+    use Carp;
 
     has config      => (is => 'ro', isa => 'P2I::Config',  required => 1);
     has db          => (is => 'ro', isa => 'P2I::PleskDB', required => 1);
@@ -24,6 +24,7 @@ class P2I::Converter {
 
     method get_client_id(Str $login) {
         my $client = $self->lather('client_get_by_username', $login);
+        croak("No client for for login `$login'") unless $client;
         return $client->{client_id};
     }
 

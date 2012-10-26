@@ -9,6 +9,7 @@ class P2I::App with MooseX::Getopt {
 
     has config      => (is => 'rw', isa => Str, default => 'config.yml');
     has modules     => (is => 'rw', isa => Str, default => 'Clients,Domains,Mail,Websites');
+    has domains     => (is => 'rw', isa => Str);
     has listmodules => (is => 'rw', isa => Bool, default => 0);
     has _cfgdata => (
         is      => 'ro',
@@ -41,6 +42,11 @@ class P2I::App with MooseX::Getopt {
             exit 0;
         }
 
+        # Add information on domains to process to config
+        if(my $domains = $self->domains) {
+            $self->cfg->do_domains([ split /,/, $domains ]);
+        }
+
         $self->db->query("SET CHARSET 'utf8'");
         for my $mod (split /,/, $self->modules) {
             # TODO use some  plugin module here
@@ -51,7 +57,10 @@ EOUSE
             $@ and die;
 
             "P2I::Converter::$mod"->new(
-                db      => "P2I::DB::$mod"->new(db => $self->db),
+                db      => "P2I::DB::$mod"->new(
+                    db => $self->db,
+                    config => $self->cfg
+                ),
                 soap    => $self->soap,
                 config  => $self->cfg,
             )->convert;

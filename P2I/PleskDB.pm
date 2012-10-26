@@ -4,7 +4,8 @@ use MooseX::Declare;
 class P2I::PleskDB {
     use Encode qw/ decode /;
 
-    has db => (is => 'ro', isa => 'DBIx::Simple', required  => 1);
+    has db      => (is => 'ro', isa => 'DBIx::Simple', required => 1);
+    has config  => (is => 'ro', isa => 'P2I::Config',  required => 1);
 
     # Run a DBIx::Simple query and return its result object. You'll have to do
     # the charset decoding yourself!

@@ -7,7 +7,6 @@ class P2I::Config {
     use Moose::Util::TypeConstraints;
     use Carp;
     use YAML;
-    use List::MoreUtils qw/ any /;
 
     has name        => (is => 'ro', isa => Str, required => 1);
     has _data       => (is => 'ro', isa => HashRef, lazy => 1, builder => '_load_config');
