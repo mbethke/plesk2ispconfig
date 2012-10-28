@@ -11,6 +11,7 @@ class P2I::App with MooseX::Getopt {
     has modules     => (is => 'rw', isa => Str, default => 'Clients,Domains,Mail,Websites');
     has domains     => (is => 'rw', isa => Str);
     has listmodules => (is => 'rw', isa => Bool, default => 0);
+    has robust      => (is => 'rw', isa => Bool, default => 0);
     has _cfgdata => (
         is      => 'ro',
         isa     => 'P2I::Config',
@@ -42,12 +43,12 @@ class P2I::App with MooseX::Getopt {
             exit 0;
         }
 
-        # Add information on domains to process to config
+        # Add information on domains and robustness to process to config
         if(my $domains = $self->domains) {
             $self->cfg->do_domains([ split /,/, $domains ]);
         }
+        $self->cfg->robust($self->robust);
 
-        $self->db->query("SET CHARSET 'utf8'");
         for my $mod (split /,/, $self->modules) {
             # TODO use some  plugin module here
             eval  <<"EOUSE";
@@ -73,11 +74,13 @@ EOUSE
 
     method _build_db {
         my $cfg = $self->cfg->plesk;
-        return DBIx::Simple->new(
+        my $db = DBIx::Simple->new(
             "DBI:mysql:database=$cfg->{db};host=$cfg->{host};port=$cfg->{port}",
             $cfg->{user}, $cfg->{pass},
             { RaiseError => 1 },
         );
+        $db->query(q[ SET CHARSET 'utf8' ]);
+        return $db;
     }
 
     method _build_soap {

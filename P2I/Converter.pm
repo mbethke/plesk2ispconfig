@@ -7,6 +7,7 @@ class P2I::Converter {
     use P2I::PleskDB;
     use Scalar::Util qw/ looks_like_number /;
     use Carp;
+    use Try::Tiny;
 
     has config      => (is => 'ro', isa => 'P2I::Config',  required => 1);
     has db          => (is => 'ro', isa => 'P2I::PleskDB', required => 1);
@@ -19,7 +20,15 @@ class P2I::Converter {
 
     # Make a SOAP call, automatically converting all arguments via soapize()
     method lather(Str $method, @params) {
-        $self->soap_call($method, map { $self->soapize($_) } @params);
+        try {
+            $self->soap_call($method, map { $self->soapize($_) } @params);
+        } catch {
+            if($self->config->robust) {
+                print STDERR "SOAP error: $_\n";
+            } else {
+                die $_;
+            }
+        };
     }
 
     method get_client_id(Str $login) {

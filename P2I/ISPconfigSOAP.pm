@@ -11,7 +11,7 @@ class P2I::ISPconfigSOAP {
     has session   => (is => 'ro',                      lazy => 1, builder => '_init_session');
 
     method soap_call(Str $method, @args) {
-        print STDERR "SOAP call: $method\n";
+        #print STDERR "SOAP call: $method\n";
         return $self->_soap_or_die($method, $self->session, @args);
     }
 
