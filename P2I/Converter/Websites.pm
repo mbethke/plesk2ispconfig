@@ -12,44 +12,38 @@ class P2I::Converter::Websites extends P2I::Converter {
 
     method convert {
         my $db = $self->db;
-        my ($syncfrom, $syncto) = $self->config->sync_addrs; 
-        my ($site, $data);
+        my $site;
 
         for my $id ($db->list_website_ids) {
-            $data           = {};
             $site           = P2I::Data::Website->new($db, $id);
             my $client_id   = $self->get_client_id($site->client_login);
-            $self->_map_fields($site, $data, $self->_field_map);
-            $data->{type}   = 'vhost';
-
-            my $newid = $self->lather('sites_web_domain_add', $client_id, $data);
-            my $added = $self->lather('sites_web_domain_get' ,$newid);
+            my $added = $self->_create_site($client_id, $site);
             my $parent_domain_id = $added->{parent_domain_id};
-            #print STDERR "Domain: $data->{domain}\n";
-
-            $self->add_to_script(sprintf "rsync %s%s/httpdocs/ %s%s/web/\n",
-                $syncfrom, $site->home, $syncto, $added->{document_root}
-            );
 
             # Create all subdomains
             for my $subid ($db->get_subdomains_for_id($id)) {
-                $data = {};
                 $site = P2I::Data::WebSubdomain->new($db, $subid);
-                $self->_map_fields($site, $data, $self->_field_map);
-                $data->{type}               = 'subdomain';
-                $data->{parent_domain_id}   = $parent_domain_id;
-                $data->{document_root}      = '/subdomains/' . $site->subdomain;
-                print STDERR "Adding subdomain: $data->{domain}\n",Dumper($data);
-            
-                my $newid = $self->lather('sites_web_subdomain_add', $client_id, $data);
-                my $added = $self->lather('sites_web_subdomain_get' ,$newid);
-                print "Added: \n", Dumper($added);
-
-                $self->add_to_script(sprintf "rsync %s%s/subdomains/%s/httpdocs/ %s%s/\n",
-                    $syncfrom, $site->home, $site->subdomain, $syncto, $added->{document_root}
-                );
+                my $added = $self->_create_site($client_id, $site);
+                #print STDERR "\tAdded with documentroot: $added->{document_root}\n";
             }
         }
+    }
+
+    method _create_site(Int $client_id, $site) {
+        my $data = {};
+        $self->_map_fields($site, $data, $self->_field_map);
+        #print STDERR "\tAdding domain: $data->{domain}\n";
+        my $newid = $self->lather('sites_web_domain_add', $client_id, $data);
+        my $added = $self->lather('sites_web_domain_get' ,$newid);
+        my ($syncfrom, $syncto) = $self->config->sync_addrs; 
+        $self->add_to_script(sprintf "rsync %s%s/httpdocs/ %s%s/web/\n",
+            $syncfrom, $site->home, $syncto, $added->{document_root}
+        );
+        return $added;
+    }
+
+    method _check_drupal_site(Str $home) {
+
     }
 
     method _build_web_server_id {
@@ -97,6 +91,7 @@ class P2I::Converter::Websites extends P2I::Converter {
             backup_copies       => \1,
             active              => \'y',
             traffic_quota_lock  => \$def->{traffic_quota_lock},
+            type                => \'vhost',
         };
     }
 

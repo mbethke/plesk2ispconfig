@@ -25,7 +25,7 @@ class P2I::Data::Website {
     has webstat          => (is => 'ro', isa => enum([qw/ none webalizer awstats /]), required => 1);
     has php_handler_type => (is => 'ro', isa => enum([qw/ cgi fastcgi module /]),     required => 1);
     has ip_address       => (is => 'ro', isa => IPAddress,                            required => 1);
-    has type             => (accessor => { type => sub { 'vhost' }});
+
     # Read a website from the database
     method _read($db, Int $id) { $db->get_website($id); }
 
