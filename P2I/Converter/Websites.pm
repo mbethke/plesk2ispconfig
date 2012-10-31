@@ -4,22 +4,51 @@ use MooseX::Declare;
 class P2I::Converter::Websites extends P2I::Converter {
     use MooseX::Types::Moose ':all';
     use P2I::Data::Website;
+    use P2I::Data::WebSubdomain;
+    use Data::Dumper;
 
     has server_id => (is => 'ro', isa => Int,
                     lazy => 1, builder => '_build_web_server_id');
 
     method convert {
         my $db = $self->db;
+        my ($syncfrom, $syncto) = $self->config->sync_addrs; 
+        my ($site, $data);
+
         for my $id ($db->list_website_ids) {
-            my $data = {};
-            my $site = P2I::Data::Website->new($db, $id);
+            $data           = {};
+            $site           = P2I::Data::Website->new($db, $id);
+            my $client_id   = $self->get_client_id($site->client_login);
             $self->_map_fields($site, $data, $self->_field_map);
-            #use Data::Dumper;
-            #print STDERR Dumper($data);
-            $self->lather('sites_web_domain_add',
-                $self->get_client_id($site->client_login),
-                $data
+            $data->{type}   = 'vhost';
+
+            my $newid = $self->lather('sites_web_domain_add', $client_id, $data);
+            my $added = $self->lather('sites_web_domain_get' ,$newid);
+            my $parent_domain_id = $added->{parent_domain_id};
+            #print STDERR "Domain: $data->{domain}\n";
+
+            $self->add_to_script(sprintf "rsync %s%s/httpdocs/ %s%s/web/\n",
+                $syncfrom, $site->home, $syncto, $added->{document_root}
             );
+
+            # Create all subdomains
+            for my $subid ($db->get_subdomains_for_id($id)) {
+                $data = {};
+                $site = P2I::Data::WebSubdomain->new($db, $subid);
+                $self->_map_fields($site, $data, $self->_field_map);
+                $data->{type}               = 'subdomain';
+                $data->{parent_domain_id}   = $parent_domain_id;
+                $data->{document_root}      = '/subdomains/' . $site->subdomain;
+                print STDERR "Adding subdomain: $data->{domain}\n",Dumper($data);
+            
+                my $newid = $self->lather('sites_web_subdomain_add', $client_id, $data);
+                my $added = $self->lather('sites_web_subdomain_get' ,$newid);
+                print "Added: \n", Dumper($added);
+
+                $self->add_to_script(sprintf "rsync %s%s/subdomains/%s/httpdocs/ %s%s/\n",
+                    $syncfrom, $site->home, $site->subdomain, $syncto, $added->{document_root}
+                );
+            }
         }
     }
 
@@ -34,47 +63,45 @@ class P2I::Converter::Websites extends P2I::Converter {
             ip_address          => sub { $def->{ip_map}{$_[0]->ip_address} },
             domain              => 'domain',
             #type  (varchar(32))            enum([qw/ subdomain vhost /])
-            #parent_domain_id  (int(11))
-            #vhost_type  (varchar(32))
-            document_root       => sub { "/var/www/" . $_[0]->domain },
-            #system_user  (varchar(255))
-            #system_group  (varchar(255))
+            vhost_type          => \'name',
             hd_quota            => mapquota('quota'),
             traffic_quota       => mapquota('real_traffic'),
             cgi                 => booltoyn('cgi'),
             ssi                 => booltoyn('ssi'),
             suexec              => \$def->{suexec},
-            #errordocs  (tinyint(1))
-            #is_subdomainwww  (tinyint(1))
-            #subdomain  (enum('none','www','*'))
+            errordocs           => 1,
+            is_subdomainwww     => 1,   # TODO how to determine? 
+            subdomain           => \'', # TODO enum('none','www','*'))
             php                 => booltoyn('php'),
             ruby                => \$def->{ruby},
-            #redirect_type  (varchar(255))
-            #redirect_path  (varchar(255))
+            redirect_type       => \'',
+            redirect_path       => \'',
             ssl                 => booltoyn('ssl'),
-            #ssl_state  (varchar(255))
-            #ssl_locality  (varchar(255))
-            #ssl_organisation  (varchar(255))
-            #ssl_organisation_unit  (varchar(255))
-            #ssl_country  (varchar(255))
-            #ssl_domain  (varchar(255))
-            #ssl_request  (mediumtext)
-            #ssl_cert  (mediumtext)
-            #ssl_bundle  (mediumtext)
-            #ssl_action  (varchar(16))
-            #stats_password  (varchar(255))
-            #stats_type  (varchar(255))
+            ssl_state           => \'',
+            ssl_locality        => \'',
+            ssl_organisation    => \'',
+            ssl_organisation_unit => \'',
+            ssl_country         => \'',
+            ssl_domain          => \'',
+            ssl_request         => \'',
+            ssl_cert            => \'',
+            ssl_bundle          => \'',
+            ssl_action          => \'',
+            stats_password      => \'', # TODO auto-generate and mail to client?
+            stats_type          => \$def->{stats_type},
             allow_override      => \$def->{allow_override},
-            #apache_directives  (mediumtext)
-            #php_open_basedir  (mediumtext)
-            #custom_php_ini  (mediumtext)
-            #backup_interval  (varchar(255))
-            #backup_copies  (int(11))
+            apache_directives   => \'',
+            php_open_basedir    => \'',  # automatically filled in
+            custom_php_ini      => \'',
+            backup_interval     => \'',
+            backup_copies       => \1,
             active              => \'y',
             traffic_quota_lock  => \$def->{traffic_quota_lock},
         };
     }
 
+    # Create a closure that gets a boolean attribute and returns a
+    # 'y' or 'n' character
     sub booltoyn {
         my $attr = shift;
         return sub {
@@ -82,6 +109,8 @@ class P2I::Converter::Websites extends P2I::Converter {
         }
     }
 
+    # Create a closure that takes a quota attribute and returns it.
+    # Returns -1 instead of 0 for "unlimited".
     sub mapquota {
         my $attr = shift;
         return sub {

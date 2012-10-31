@@ -7,7 +7,7 @@ class P2I::Data::Website {
     use MooseX::Types::Moose ':all';
     use P2I::Types qw/ MysqlBool Bigint IPAddress /;
 
-    has [qw/ domain fp_adm fp_pass login home shell client_login  /] =>
+    has [qw/ domain fp_adm fp_pass login home shell client_login /] =>
         (is => 'ro', isa => Str, required => 1);
 
     has [qw/ traffic_bandwidth max_connection /] =>
@@ -20,14 +20,17 @@ class P2I::Data::Website {
     has [qw/ real_traffic quota /] =>
         (is => 'ro', isa => Bigint, required => 1);
 
-    has webstat             => (is => 'ro', isa => enum([qw/ none webalizer awstats /]), required => 1);
-    has php_handler_type    => (is => 'ro', isa => enum([qw/ cgi fastcgi module /]), required => 1);
-    has ip_address          => (is => 'ro', isa => IPAddress, required => 1);
+    has parent_domain    => (is => 'ro', isa => 'Maybe[Str]',                         required => 1);
+    has htype            => (is => 'ro', isa => enum([qw/ vrt_hst std_fwd none /]),   required => 1);
+    has webstat          => (is => 'ro', isa => enum([qw/ none webalizer awstats /]), required => 1);
+    has php_handler_type => (is => 'ro', isa => enum([qw/ cgi fastcgi module /]),     required => 1);
+    has ip_address       => (is => 'ro', isa => IPAddress,                            required => 1);
+    has type             => (accessor => { type => sub { 'vhost' }});
+    # Read a website from the database
+    method _read($db, Int $id) { $db->get_website($id); }
 
     around BUILDARGS($db, Int $id) {
-        #my $data = $db->get_website($id);
-        #return $self->$orig($data);
-        return $self->$orig($db->get_website($id));
+        return $self->$orig($self->_read($db, $id));
     }
 }
 

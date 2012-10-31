@@ -28,6 +28,10 @@ class P2I::Config {
     method plesk        { return $self->_data->{plesk}; }
     method ispconfig    { return $self->_data->{ispconfig}; }
 
+    method sync_addrs {
+        return $self->_data->{plesk}{sync}, $self->_data->{ispconfig}{sync};
+    }
+
     method _load_config {
         my $check = {
             server => { mail => 1, web => 1 },
@@ -43,7 +47,8 @@ class P2I::Config {
                     suexec              => 1,
                     traffic_quota_lock  => 1,
                     allow_override      => 1,
-                    ip_map              => {}
+                    ip_map              => {},
+                    stats_type          => 1,
                 },
             },
             plesk => {
@@ -52,12 +57,14 @@ class P2I::Config {
                 port => 1,
                 user => 1,
                 pass => 1,
+                sync => 1,
             },
             ispconfig => {
                 uri     => 1,
                 proxy   => 1,
                 user    => 1,
                 pass    => 1,
+                sync    => 1,
             },
         };
         my $d = YAML::LoadFile($self->name)

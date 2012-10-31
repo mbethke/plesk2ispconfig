@@ -18,7 +18,7 @@ class P2I::ISPconfigSOAP {
     method soapize($d) {
         'HASH'  eq ref($d) and return SOAP::Data->type(map => $d);
         'ARRAY' eq ref($d) and die "TODO: check correct conversion for SOAP arrays";
-        return $d;  # Everything else should be correctly handled
+        return $d;  # Everything else should be handled correctly
     }
 
     method _init_soap {
