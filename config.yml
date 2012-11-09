@@ -17,16 +17,20 @@ defaults:
 server:
   mail: 5.9.28.24
   web: 5.9.35.102
+  db:  5.9.35.102
 plesk:
   db: psa
   host: 127.0.0.1
   port: 3306
   user: pleskuser
   pass: foo
-  sync: root@127.0.0.1
+  sync:
+    host: dcs001.zonarix.com
+    port: 12300
+    user: mabet_zo_tec
 ispconfig:
   uri: http://192.168.56.3:8079/remote/
   proxy: http://192.168.56.3:8079/remote/index.php
   user: apiuser
   pass: 123456
-  sync: root@192.168.56.3
+postscript: execute_me_later.sh

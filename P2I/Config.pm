@@ -14,8 +14,8 @@ class P2I::Config {
     has robust      => (is => 'rw', isa => Bool);
 
     method server(Str $type) {
-        croak("type arg must be `mail' or `web'")
-            unless $type ~~ [qw/ mail web /];
+        croak("type arg must be `mail', `db' or `web'")
+            unless $type ~~ [qw/ mail web db /];
         return $self->_data->{server}{$type};
     }
 
@@ -27,14 +27,21 @@ class P2I::Config {
 
     method plesk        { return $self->_data->{plesk}; }
     method ispconfig    { return $self->_data->{ispconfig}; }
+    method postscript   { return $self->_data->{postscript}; }
 
-    method sync_addrs {
-        return $self->_data->{plesk}{sync}, $self->_data->{ispconfig}{sync};
+    method sync {
+        my $sync = { %{$self->_data->{plesk}{sync}} };
+        $sync->{port} //= 22;
+        return $sync;
     }
 
     method _load_config {
         my $check = {
-            server => { mail => 1, web => 1 },
+            server => {
+                mail => 1,
+                web => 1,
+                db => 1
+            },
             defaults => {
                 mail => {
                     uid     => 1,
@@ -57,15 +64,18 @@ class P2I::Config {
                 port => 1,
                 user => 1,
                 pass => 1,
-                sync => 1,
+                sync => {
+                    user => 1,
+                    host => 1,
+                },
             },
             ispconfig => {
                 uri     => 1,
                 proxy   => 1,
                 user    => 1,
                 pass    => 1,
-                sync    => 1,
             },
+            postscript => 1,
         };
         my $d = YAML::LoadFile($self->name)
             or die "Can't load config file `@{[$self->name]}'";

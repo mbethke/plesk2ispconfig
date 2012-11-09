@@ -7,8 +7,10 @@ class P2I::Converter::Websites extends P2I::Converter {
     use P2I::Data::WebSubdomain;
     use Data::Dumper;
 
-    has server_id => (is => 'ro', isa => Int,
+    has web_server_id => (is => 'ro', isa => Int,
                     lazy => 1, builder => '_build_web_server_id');
+    has db_server_id =>  (is => 'ro', isa => Int,
+                    lazy => 1, builder => '_build_db_server_id');
 
     method convert {
         my $db = $self->db;
@@ -35,25 +37,71 @@ class P2I::Converter::Websites extends P2I::Converter {
         #print STDERR "\tAdding domain: $data->{domain}\n";
         my $newid = $self->lather('sites_web_domain_add', $client_id, $data);
         my $added = $self->lather('sites_web_domain_get' ,$newid);
-        my ($syncfrom, $syncto) = $self->config->sync_addrs; 
-        $self->add_to_script(sprintf "rsync %s%s/httpdocs/ %s%s/web/\n",
-            $syncfrom, $site->home, $syncto, $added->{document_root}
+        my $sync = $self->config->sync; 
+        $self->add_to_script(sprintf "rsync -e'ssh -p%d' %s\@%s:%s/httpdocs/' '%s/web/'\n",
+            $sync->{port}, $sync->{user}, $sync->{host}, $site->home,
+            $added->{document_root}
         );
+        $self->_check_site_db($client_id, $site->home);
         return $added;
     }
 
-    method _check_drupal_site(Str $home) {
+    # This will try and determine the database name and credentials used for the site. If found, prints
+    # commands to recrate the database and dump/restore its contents to the script to execute later.
+    # Currently only supports Drupal sites
+    method _check_site_db(Int $client_id, Str $home) {
+        my $sync = $self->config->sync; 
+        my $cmd = sprintf q[ssh -p%d %s@%s "grep 2>/dev/null --no-filename '^\$db_url' %s/http{,s}docs/sites/default/settings.php"],
+        @$sync{qw/ port user host /}, $home;
+        my $res = qx[$cmd]; # syntax highlighter workaround
+        # 'mysqli://mueller:xxxpassxxx@localhost/mueller_db'
+        $res =~ m!mysqli?://(?<user>\w+):(?<password>[^\@]+)\@(?<host>\w+)/(?<database>\w+)!;
+        if(keys %+) {
+            $self->_add_database($client_id, {%+});
+            #$self->add_to_script(sprintf q[mysql -uroot -p -e"CREATE DATABASE '%s'"\n], $+{database});
+            #$self->add_to_script(
+            #    sprintf q[mysql -uroot -p -e"GRANT ALL PRIVILEGES ON %s.* TO '%s'@localhost IDENTIFIED BY '%s\n'],
+            #    $+{database}, $+{user}, $+{password});
+            $self->add_to_script(
+                sprintf qq[ssh -p%d %s@%s "mysqldump -u%s -p'%s' %s | bzip2" | bzcat | mysql -u%s -p'%s' -D%s\n],
+                @$sync{qw/ port user host /}, $+{user}, $+{password}, $+{database}, $+{user}, $+{password}, $+{database});
+        } else {
+            print STDERR "Warning: no database settings found for this site (home: $home), please adjust manually!\n";
+        }
+    }
 
+    method _add_database(Int $client_id, HashRef $credentials) {
+       my %params = (
+           server_id        => $self->db_server_id,
+           type             => 'mysql',     # TODO nothing else supported yet
+           database_name    => $credentials->{database},
+           database_user    => $credentials->{user},
+           database_password=> $credentials->{password},
+           database_charset => 'UTF8',      # TODO always?
+           remote_access    => 'y',
+           remote_ips       => $self->config->server('web'),
+           active           => 'y', 
+       );
+       if($self->web_server_id eq $self->db_server_id) {
+           # Web and DB server are on the same host, so overwrite these settings
+           $params{remote_access} = 'n';
+           $params{remote_ips}    = '';
+       }
+       $self->lather('sites_database_add', \%params);
     }
 
     method _build_web_server_id {
         return $self->get_server_id($self->config->server('web'));
     }
 
+    method _build_db_server_id {
+        return $self->get_server_id($self->config->server('db'));
+    }
+
     method _field_map {
         my $def = $self->config->defaults('web');
         return {
-            server_id           => \$self->server_id,
+            server_id           => \$self->web_server_id,
             ip_address          => sub { $def->{ip_map}{$_[0]->ip_address} },
             domain              => 'domain',
             #type  (varchar(32))            enum([qw/ subdomain vhost /])

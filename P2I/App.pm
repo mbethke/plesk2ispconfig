@@ -49,6 +49,9 @@ class P2I::App with MooseX::Getopt {
         }
         $self->cfg->robust($self->robust);
 
+        # Remove the script to execute later
+        unlink $self->cfg->postscript;
+
         for my $mod (split /,/, $self->modules) {
             # TODO use some  plugin module here
             eval  <<"EOUSE";

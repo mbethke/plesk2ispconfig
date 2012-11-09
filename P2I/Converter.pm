@@ -8,6 +8,7 @@ class P2I::Converter {
     use Scalar::Util qw/ looks_like_number /;
     use Carp;
     use Try::Tiny;
+    use IO::Handle;
 
     has config      => (is => 'ro', isa => 'P2I::Config',  required => 1);
     has db          => (is => 'ro', isa => 'P2I::PleskDB', required => 1);
@@ -46,9 +47,14 @@ class P2I::Converter {
     }
 
     # Add a bit of text to a script that should be executed later.
-    # For now, just print it to the console
     method add_to_script(Str $chunk) {
-        print $chunk;
+        if(open my $fh, '>>', $self->config->postscript) {
+            $fh->print($chunk);
+            print "Added to script: `$chunk'\n";
+            $fh->close;
+        } else {
+            print STDERR "Error: can't append to `",$self->config->postscript,"': $!\n";
+        }
     }
 
     method _map_fields($src, $dst, $map) {

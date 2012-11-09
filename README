@@ -1,5 +1,5 @@
 NAME
-        plesk2ispconfig - convert Plesk datbases to ISPconfig
+        plesk2ispconfig - convert Plesk databases to ISPconfig
 
 
 SYNOPSIS
@@ -11,15 +11,28 @@ DESCRIPTION
 This script will convert the most tedious parts of your Plesk installation to
 ISPconfig, namely client accounts, mail addresses (mailboxes, aliases and
 forwards) and web sites. You configure it through a simple config file, mainly
-for the crendetials to access your installations and your server addresses, and
+for the credentials to access your installations and your server addresses, and
 the rest should be fully automatic.
+
+OPTIONS
+    --config FILE
+        A YAML config file, see below.
+    --modules MODULE[,MODULE ...]
+        Modules to run. Default is to run all available.
+    --listmodules
+        List available modules and exit
+    --domains DOMAIN[,DOMAIN ...]
+        Process only these domains.
+    --robust
+        Print an error message and continue on database or SOAP communication
+        errors instead of aborting.
 
 
 CONFIGURATION
 
 Configuration is through a file written in YAML (http://yaml.org). The default
 looks like this---just replace the values in there but don't change the format.
-The script validates the contnts though to make sure everything it needs is
+The script validates the contents though to make sure everything it needs is
 there.
 
 ---
@@ -45,11 +58,18 @@ plesk:
   port: 3306
   user: pleskuser
   pass: pleskpass
+  sync:
+    host: 127.0.0.1
+    user: root
 ispconfig:
   uri: http://localhost:8079/remote/
   proxy: http://localhost:8079/remote/index.php
   user: apiuser
   pass: 123456
+  sync:
+    host: 1.2.3.4
+    user: root
+    port: 2222
 
 The "plesk" and "ispconfig" sections should be self-explanatory: they specify
 how to access your respective installations. While ISPconfig has a reasonably
@@ -60,7 +80,7 @@ its database. This has only been tested with Plesk 9 though!
 The "server" section simply specifies your ISPconfig server IPs. If you have
 only one server for mail and web, just specify the same address twice.
 
-The "defaults" contain setting that are found in IsPconfig but not directly
+The "defaults" contain settings that are found in ISPconfig but not directly
 equivalent in Plesk. The following might need explanation:
 ip_map: map old Plesk web server IPs to new ISPconfig ones. If you had several
         IPs and your sites distributed across them, this will recreate the

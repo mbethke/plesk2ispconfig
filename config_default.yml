@@ -16,16 +16,20 @@ defaults:
 server:
   mail: 1.2.3.4
   web: 1.2.3.4
+  db: 1.2.3.4
 plesk:
   db: psa
   host: 127.0.0.1
   port: 3306
   user: pleskuser
   pass: pleskpass
-  sync: root@5.6.7.8
+  sync:
+    host: 127.0.0.1
+    user: root
+    port: 2222
 ispconfig:
   uri: http://localhost:8079/remote/
   proxy: http://localhost:8079/remote/index.php
   user: apiuser
   pass: 123456
-  sync: root@1.2.3.4
+postscript: execute_me_later.sh
