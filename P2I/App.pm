@@ -49,8 +49,9 @@ class P2I::App with MooseX::Getopt {
         }
         $self->cfg->robust($self->robust);
 
-        # Remove the script to execute later
+        # Remove scripts from previous runs
         unlink $self->cfg->postscript;
+        unlink $self->cfg->mailsync->{writerc} if defined $self->cfg->mailsync->{writerc};
 
         for my $mod (split /,/, $self->modules) {
             # TODO use some  plugin module here

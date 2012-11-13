@@ -33,3 +33,7 @@ ispconfig:
   user: apiuser
   pass: 123456
 postscript: execute_me_later.sh
+mailsync:
+  writerc: migration_oli.rc
+  fromserver: mail.%d
+  use_ssl: 1

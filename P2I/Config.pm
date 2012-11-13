@@ -28,6 +28,7 @@ class P2I::Config {
     method plesk        { return $self->_data->{plesk}; }
     method ispconfig    { return $self->_data->{ispconfig}; }
     method postscript   { return $self->_data->{postscript}; }
+    method mailsync     { return $self->_data->{mailsync}; }
 
     method sync {
         my $sync = { %{$self->_data->{plesk}{sync}} };
@@ -47,7 +48,7 @@ class P2I::Config {
                     uid     => 1,
                     gid     => 1,
                     homedir => 1,
-                    maildir => 1,
+
                 },
                 web => {
                     ruby                => 1,
@@ -75,7 +76,8 @@ class P2I::Config {
                 user    => 1,
                 pass    => 1,
             },
-            postscript => 1,
+            postscript      => 1,
+            mailsync        => {},
         };
         my $d = YAML::LoadFile($self->name)
             or die "Can't load config file `@{[$self->name]}'";

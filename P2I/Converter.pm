@@ -46,15 +46,20 @@ class P2I::Converter {
         return $servers->[0]{server_id};
     }
 
-    # Add a bit of text to a script that should be executed later.
-    method add_to_script(Str $chunk) {
-        if(open my $fh, '>>', $self->config->postscript) {
+    # Add a bit of text to some file
+    method add_to_file(Str $file, Str $chunk) {
+        if(open my $fh, '>>', $file) {
             $fh->print($chunk);
-            print "Added to script: `$chunk'\n";
+            print "Added to $file: `$chunk'\n";
             $fh->close;
         } else {
-            print STDERR "Error: can't append to `",$self->config->postscript,"': $!\n";
+            print STDERR "Error: can't append to `$file': $!\n";
         }
+    }
+
+    # Add a bit of text to a script that should be executed later.
+    method add_to_script(Str $chunk) {
+        $self->add_to_file($self->config->postscript, $chunk);
     }
 
     method _map_fields($src, $dst, $map) {
