@@ -11,6 +11,7 @@ class P2I::App with MooseX::Getopt {
     has modules     => (is => 'rw', isa => Str, default => 'Clients,Domains,Mail,Websites');
     has domains     => (is => 'rw', isa => Str);
     has listmodules => (is => 'rw', isa => Bool, default => 0);
+    has debug       => (is => 'rw', isa => Bool, default => 0);
     has robust      => (is => 'rw', isa => Bool, default => 0);
     has _cfgdata => (
         is      => 'ro',
@@ -43,6 +44,15 @@ class P2I::App with MooseX::Getopt {
             exit 0;
         }
 
+        # Preload modules to catch errors early
+        for my $mod (split /,/, $self->modules) {
+            eval  <<"EOUSE";
+                use P2I::Converter::$mod;
+                use P2I::DB::$mod;
+EOUSE
+            $@ and die;
+        }
+
         # Add information on domains and robustness to process to config
         if(my $domains = $self->domains) {
             $self->cfg->do_domains([ split /,/, $domains ]);
@@ -53,14 +63,8 @@ class P2I::App with MooseX::Getopt {
         unlink $self->cfg->postscript;
         unlink $self->cfg->mailsync->{writerc} if defined $self->cfg->mailsync->{writerc};
 
+        # Main loop
         for my $mod (split /,/, $self->modules) {
-            # TODO use some  plugin module here
-            eval  <<"EOUSE";
-                use P2I::Converter::$mod;
-                use P2I::DB::$mod;
-EOUSE
-            $@ and die;
-
             "P2I::Converter::$mod"->new(
                 db      => "P2I::DB::$mod"->new(
                     db => $self->db,
