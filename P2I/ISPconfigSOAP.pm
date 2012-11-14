@@ -2,6 +2,8 @@ use Modern::Perl;
 use MooseX::Declare;
 use Method::Signatures::Modifiers;
 
+BEGIN { $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0 }
+
 class P2I::ISPconfigSOAP {
     use SOAP::Lite; # trace =>  [qw/ parameters debug /];
     use Data::Dumper;
@@ -37,7 +39,7 @@ class P2I::ISPconfigSOAP {
     method _soap_or_die($method, @args) {
         #say "calling SOAP->$method(",(join ",",@args),")";
         my $som = $self->soap->call($method, @args);
-        die "SOAP error for method `$method': " . $som->faultstring if ($som->fault);
+        die "SOAP error for method `$method': " . $som->faultstring . "\nParams:\n".Dumper(@args) if ($som->fault);
         return $som->result;
     }
 }
