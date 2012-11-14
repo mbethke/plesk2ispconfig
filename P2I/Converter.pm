@@ -1,7 +1,7 @@
 use Modern::Perl;
 use MooseX::Declare;
 
-class P2I::Converter {
+class P2I::Converter with P2I::Debug {
     use MooseX::Types::Moose ':all';
     use P2I::Types qw/ IPAddress /;
     use P2I::PleskDB;
@@ -50,10 +50,10 @@ class P2I::Converter {
     method add_to_file(Str $file, Str $chunk) {
         if(open my $fh, '>>', $file) {
             $fh->print($chunk);
-            print "Added to $file: `$chunk'\n";
+            $self->dbg("Added some text to $file");
             $fh->close;
         } else {
-            print STDERR "Error: can't append to `$file': $!\n";
+            print STDERR "ERROR: can't append to `$file': $!\n";
         }
     }
 

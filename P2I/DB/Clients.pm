@@ -21,12 +21,20 @@ class P2I::DB::Clients extends P2I::PleskDB {
     }
 
     method read_client(Int $id) {
+        my $doms = $self->config->do_domains;
+        my $where_clause = 'WHERE c.id=?';
+        if($doms) {
+            $where_clause = q[JOIN domains d ON c.id=d.cl_id
+            WHERE c.id=? AND d.name IN ] .
+            '(' . join(',', ('?') x @$doms) . ')';
+        }
         return P2I::Data::Client->new(
-            $self->query_hash(q[
-                SELECT c.*, a.password password, a.type password_type
-                FROM clients c LEFT JOIN accounts a ON c.account_id=a.id
-                WHERE c.id=? ],
-                $id
+            $self->query_hash(qq[
+                SELECT DISTINCT c.*, a.password, a.type password_type
+                FROM clients c
+                LEFT JOIN accounts a ON c.account_id=a.id
+                $where_clause],
+                $id, @{$self->config->do_domains // []}
             )
         );
     }

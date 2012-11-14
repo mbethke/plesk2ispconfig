@@ -11,20 +11,29 @@ class P2I::Converter::Clients extends P2I::Converter {
     method convert {
         my %parentmap;
 
+        $self->dbg(__PACKAGE__ . '::convert');
+
+        # TODO is this necessary at all or is "admin" the only one w/o parent anyway?
         for my $id ($self->db->list_parents) {
             my %data;
             $self->_map_fields( $self->db->read_client($id), \%data, $self->_field_map );
             next if 'admin' eq $data{username};
+            $self->dbg("\tProcessing parent account `$data{username}'");
             my $newid = $self->lather('client_add', 1, \%data);
-            say "soap done  [newID:$newid]";
             $parentmap{$data{id}} = $newid;
+            $self->dbg("\t\tAdded parent oldID=$data{id}, newID=$newid");
         }
 
         for my $id ($self->db->list_dependents) {
             my %data;
             my $record = $self->db->read_client($id);
             $self->_map_fields( $record, \%data, $self->_field_map );
-            $data{parent_client_id} = $parentmap{$record->id};
+            if($parentmap{$record->parent_id}) {
+                $data{parent_client_id} = $parentmap{$record->parent_id};
+                $self->dbg("\tProcessing dependent account `$data{username}' (parent_id=$data{parent_client_id})");
+            } else {
+                $self->dbg("\tProcessing account: `$data{username}'");
+            }
             $self->lather('client_add', 1, \%data);
         }
     }

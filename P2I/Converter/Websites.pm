@@ -16,6 +16,8 @@ class P2I::Converter::Websites extends P2I::Converter {
         my $db = $self->db;
         my $site;
 
+        $self->dbg(__PACKAGE__ . '::convert');
+
         for my $id ($db->list_website_ids) {
             $site           = P2I::Data::Website->new($db, $id);
             my $client_id   = $self->get_client_id($site->client_login);
@@ -34,7 +36,7 @@ class P2I::Converter::Websites extends P2I::Converter {
     method _create_site(Int $client_id, $site) {
         my $data = {};
         $self->_map_fields($site, $data, $self->_field_map);
-        #print STDERR "\tAdding domain: $data->{domain}\n";
+        $self->dbg("\tCreating site: $data->{domain}");
         my $newid = $self->lather('sites_web_domain_add', $client_id, $data);
         my $added = $self->lather('sites_web_domain_get' ,$newid);
         my $sync = $self->config->sync; 
@@ -50,6 +52,7 @@ class P2I::Converter::Websites extends P2I::Converter {
     # commands to recrate the database and dump/restore its contents to the script to execute later.
     # Currently only supports Drupal sites
     method _check_site_db(Int $client_id, Str $home) {
+        $self->dbg("\t" . __PACKAGE__ . "::_check_site_db($client_id, $home)");
         my $sync = $self->config->sync; 
         my $cmd = sprintf q[ssh -p%d %s@%s "grep 2>/dev/null --no-filename '^\$db_url' %s/http{,s}docs/sites/default/settings.php"],
         @$sync{qw/ port user host /}, $home;
@@ -82,6 +85,7 @@ class P2I::Converter::Websites extends P2I::Converter {
            remote_ips       => $self->config->server('web'),
            active           => 'y', 
        );
+       $self->dbg("\t\t" . __PACKAGE__ . "::_add_database($client_id, $credentials->{database}/$credentials->{user})");
        if($self->web_server_id eq $self->db_server_id) {
            # Web and DB server are on the same host, so overwrite these settings
            $params{remote_access} = 'n';

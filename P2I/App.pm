@@ -53,11 +53,11 @@ EOUSE
             $@ and die;
         }
 
-        # Add information on domains and robustness to process to config
+        # Add information on domains and stuff to config
         if(my $domains = $self->domains) {
             $self->cfg->do_domains([ split /,/, $domains ]);
         }
-        $self->cfg->robust($self->robust);
+        $self->cfg->$_($self->$_) for qw/robust debug /;
 
         # Remove scripts from previous runs
         unlink $self->cfg->postscript;

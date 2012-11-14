@@ -16,15 +16,20 @@ class P2I::Converter::Mail extends P2I::Converter {
 
     method convert {
         my %clients;
+
+        $self->dbg(__PACKAGE__ . '::convert');
+        
         # Convert local mailboxes and forwards
         for my $mbox ($self->db->get_mailboxes) {
             $clients{$mbox->login} //= $self->lather('client_get_by_username', $mbox->login)->{userid};
+            $self->dbg("\tConverting mailbox: ", $mbox->login, " (userID $clients{$mbox->login})");
             $self->_create_mailbox($clients{$mbox->login}, $mbox);
         }
 
         # Convert aliases
         for my $alias ($self->db->get_aliases) {
             $clients{$alias->login} //= $self->lather('client_get_by_username', $alias->login)->{userid};
+            $self->dbg("\tConverting alias ", $alias->login, "(userID $clients{$alias->login})");
             $self->_create_alias($clients{$alias->login}, $alias);
         }
     }
@@ -58,6 +63,7 @@ class P2I::Converter::Mail extends P2I::Converter {
     }
 
     method _create_domain(Int $client_id, Str $domain) {
+        $self->dbg("\t\tAdding mail domain `$domain'");
         $self->lather('mail_domain_add', $client_id, {
                 server_id   => $self->server_id,
                 domain      => $domain,

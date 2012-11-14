@@ -12,6 +12,7 @@ class P2I::Config {
     has _data       => (is => 'ro', isa => HashRef, lazy => 1, builder => '_load_config');
     has do_domains  => (is => 'rw', isa => ArrayRef);
     has robust      => (is => 'rw', isa => Bool);
+    has debug       => (is => 'rw', isa => Bool);
 
     method server(Str $type) {
         croak("type arg must be `mail', `db' or `web'")
