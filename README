@@ -112,12 +112,17 @@ quite finished or  even begun:
 
 
 REQUIREMENTS
+
+	Packages:
+	liblocal-lib-perl
+
         Perl and the following modules:
         Modern::Perl
         Moose
         MooseX::Declare
         MooseX::Types
         MooseX::Types::DateTime::ButMaintained
+	MooseX::Getopt
         List::MoreUtils
         Method::Signatures::Modifiers
         DateTime::Format::MySQL
