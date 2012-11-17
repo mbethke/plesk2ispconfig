@@ -22,8 +22,8 @@ class P2I::Converter::Mail extends P2I::Converter {
         # Convert local mailboxes and forwards
         for my $mbox ($self->db->get_mailboxes) {
             $clients{$mbox->login} //= $self->lather('client_get_by_username', $mbox->login)->{userid};
-            $self->dbg("\tConverting mailbox: ", $mbox->login, " (userID $clients{$mbox->login})");
-            $self->_create_mailbox($clients{$mbox->login}, $mbox);
+            $self->dbg("\tConverting mailbox: ", $mbox->mail_name, " (userID $clients{$mbox->login})");
+            $self->_create_mailbox_or_redirect($clients{$mbox->login}, $mbox);
         }
 
         # Convert aliases
@@ -34,7 +34,7 @@ class P2I::Converter::Mail extends P2I::Converter {
         }
     }
 
-    method _create_mailbox(Int $client_id, $mbox) {
+    method _create_mailbox_or_redirect(Int $client_id, $mbox) {
         # Create mail domain if it doesn't exit yet
         my $doms    = $self->domains;
         my $mdomain = $mbox->domain;
@@ -44,22 +44,27 @@ class P2I::Converter::Mail extends P2I::Converter {
         }
 
         # Check whether is'a local mailbox or a forward
-        if($mbox->redirect) {
-            # Create a forward
-            $self->lather('mail_forward_add', $client_id, {
-                    server_id   => $self->server_id,
-                    source      => $mbox->email,
-                    destination => $mbox->redir_addr,
-                    type        => 'forward',
-                    active      => 'y'
-                });
-        } else {
-            my %data;
-            # Create a mailbox
-            $self->_map_fields($mbox, \%data, $self->_field_map);
-            $self->lather('mail_user_add', $client_id, \%data);
-            $self->_add_to_olirc($mbox->email, $mbox);
-        }
+        $mbox->redirect and return $self->_create_redirect($client_id, $mbox);
+        return $self->_create_mailbox($client_id, $mbox);
+    }
+
+    method _create_mailbox(Int $client_id, $mbox) {
+        my %data;
+        $self->dbg("\tCreating local mailbox");
+        $self->_map_fields($mbox, \%data, $self->_field_map);
+        $self->lather('mail_user_add', $client_id, \%data);
+        $self->_add_to_olirc($mbox->email, $mbox);
+    }
+
+    method _create_redirect(Int $client_id, $mbox) {
+        $self->dbg("\tCreating forward to ", $mbox->redir_addr);
+        $self->lather('mail_forward_add', $client_id, {
+                server_id   => $self->server_id,
+                source      => $mbox->email,
+                destination => $mbox->redir_addr,
+                type        => 'forward',
+                active      => 'y'
+            });
     }
 
     method _create_domain(Int $client_id, Str $domain) {
@@ -93,25 +98,25 @@ class P2I::Converter::Mail extends P2I::Converter {
             login                   => 'email',
             password                => 'mangled_password',
             name                    => 'realname',
-#            uid  (int(11))
-#            gid  (int(11))
+            uid                     => \$def->{uid},
+            gid                     => \$def->{gid},
             maildir                 => sub { $self->_create_maildir(shift, $def) },
             quota                   => sub { my $q=shift->quota; -1==$q ? 0 : $q },
-#            cc  (varchar(255))
+            cc                      => '',
             homedir                 => \$def->{homedir},
             autoresponder           => \'n',
-#            autoresponder_start_date  (datetime)
-#            autoresponder_end_date  (datetime)
-#            autoresponder_text  (mediumtext)
-            move_junk       => \'y',
-#            custom_mailfilter  (mediumtext)
-            postfix         => \'y',
-            access          => \'y',
-            disableimap     => \'n',
-            disablepop3     => \'n',
-            disabledeliver  => \'n',
-            disablesmtp     => \'n',
-            server_id       => sub { \$self->server_id },
+            autoresponder_start_date=> '',
+            autoresponder_end_date  => '',
+            autoresponder_text      => '',
+            move_junk               => \'y',
+            custom_mailfilter       => '',
+            postfix                 => \'y',
+            access                  => \'y',
+            disableimap             => \'n',
+            disablepop3             => \'n',
+            disabledeliver          => \'n',
+            disablesmtp             => \'n',
+            server_id               => sub { \$self->server_id },
         };
     }
 
