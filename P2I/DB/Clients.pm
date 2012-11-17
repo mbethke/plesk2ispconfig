@@ -5,36 +5,35 @@ class P2I::DB::Clients extends P2I::PleskDB {
     use P2I::Data::Client;
 
     method list_parents {
-        return $self->query_flat(q[
-            SELECT id
-            FROM clients
-            WHERE parent_id IS NULL
-            ORDER BY id ]);
+        $self->_list_clients('parent_id IS NULL');
     }
 
     method list_dependents {
-        return $self->query_flat(q[
-            SELECT id
-            FROM clients
-            WHERE parent_id IS NOT NULL
-            ORDER BY id ]);
+        $self->_list_clients('parent_id IS NOT NULL');
+    }
+
+    method _list_clients(Str $where) {
+        my ($doms, $sql) = $self->domain_sql(
+            "JOIN domains d ON c.id=d.cl_id WHERE $where AND d.name"
+        );
+        $sql = "WHERE $where" unless $sql;
+
+        return $self->query_flat(qq[
+            SELECT c.id
+            FROM clients c
+            $sql
+            ORDER BY c.id ], @$doms
+        );
     }
 
     method read_client(Int $id) {
-        my $doms = $self->config->do_domains;
-        my $where_clause = 'WHERE c.id=?';
-        if($doms) {
-            $where_clause = q[JOIN domains d ON c.id=d.cl_id
-            WHERE c.id=? AND d.name IN ] .
-            '(' . join(',', ('?') x @$doms) . ')';
-        }
         return P2I::Data::Client->new(
             $self->query_hash(qq[
                 SELECT DISTINCT c.*, a.password, a.type password_type
                 FROM clients c
                 LEFT JOIN accounts a ON c.account_id=a.id
-                $where_clause],
-                $id, @{$self->config->do_domains // []}
+                WHERE c.id=?],
+                $id
             )
         );
     }

@@ -5,7 +5,10 @@ class P2I::DB::Websites extends P2I::PleskDB {
     use P2I::Data::Website;
 
     method list_website_ids {
-        return $self->query_flat(q[ SELECT dom_id FROM hosting ]);
+        my ($doms, $sql) = $self->domain_sql(
+            "JOIN domains d ON d.id=h.dom_id WHERE d.name"
+        );
+        return $self->query_flat(qq[ SELECT DISTINCT dom_id FROM hosting h $sql], @$doms);
     }
 
     method get_website(Int $id) {

@@ -10,9 +10,10 @@ class P2I::PleskDB {
 
     # Run a DBIx::Simple query and return its result object. You'll have to do
     # the charset decoding yourself!
-    method query {
+    method query(@args) {
         try {
-            $self->db->query(@_)
+            #print STDERR "QUERY: ",join(', ',@args),"\n";
+            $self->db->query(@args)
         } catch {
             if($self->config->robust) {
                 print STDERR "SQL error: $_\n";
@@ -24,13 +25,13 @@ class P2I::PleskDB {
 
     # Query a flat result list and decode to UTF8
     method query_flat(@args) {
-        my $a = $self->db->query(@args)->flat;
+        my $a = $self->query(@args)->flat;
         return map { decode('utf8', $_) } @$a;
     }
 
     # Query a hash of results and decode values to UTF8
     method query_hash(@args) {
-        my $h = $self->db->query(@args)->hash;
+        my $h = $self->query(@args)->hash;
         $_ = decode('utf8', $_) for(values %$h);
         return $h;
     }
@@ -40,6 +41,16 @@ class P2I::PleskDB {
         return map {
             $_ = decode('utf8', $_) for(values %$_);
             $_;
-        } $self->db->query(@args)->hashes;
+        } $self->query(@args)->hashes;
+    }
+
+    # Create an SQL snippet for a variable number of domains
+    # Returns both SQL and a reference to the domain array
+    method domain_sql(Maybe[Str] $prepend) {
+        my $doms = $self->config->do_domains;
+        if(@$doms) {
+            return ($doms, ($prepend // '') . ' IN (' . join(',', ('?') x @$doms) . ')');
+        }
+        return ([], '');
     }
 }
