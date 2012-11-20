@@ -1,6 +1,5 @@
 package P2I::Types;
 use Modern::Perl;
-use feature 'switch';
 use MooseX::Types -declare => [ qw/ MysqlDateTime MysqlBool Bigint IPAddress / ];
 use MooseX::Types::Moose qw/ Bool Str /;
 use MooseX::Types::DateTime::ButMaintained qw/ DateTime /;
@@ -17,9 +16,9 @@ subtype MysqlBool, as Bool;
 coerce MysqlBool,
     from Str,
     via {
-        given(lc shift) {
-            return 1 when 'true';
-            return 0 when 'false';
+        for(lc shift) {
+            'true'  eq $_ and return 1;
+            'false' eq $_ and return 0;
             die 'MysqlBool bust be "true" or "false"';
         }
     };

@@ -1,5 +1,4 @@
 use Modern::Perl;
-use feature 'switch';
 use MooseX::Declare;
 
 class P2I::Converter with P2I::Debug {
@@ -66,13 +65,13 @@ class P2I::Converter with P2I::Debug {
     method _map_fields($src, $dst, $map) {
         while(my ($dattr, $sattr) = each %$map) {
             my $val;
-            for($sattr) {
-                when(undef)                 { $val = undef };
-                when('CODE' eq ref)         { $val = $_->($src) };
-                when('SCALAR' eq ref)       { $val = $$_ };
-                when(looks_like_number($_)) { $val = $_ };
-                when(!length)               { $val = $_ };
-                default                     { $val = $src->$_ };
+            SWITCH: for($sattr) {
+                not defined $_ and          $val = undef,      last SWITCH;
+                'CODE' eq ref and           $val = $_->($src), last SWITCH;
+                'SCALAR' eq ref and         $val = $$_,        last SWITCH;
+                looks_like_number($_) and   $val = $_,         last SWITCH;
+                !length and                 $val = $_,         last SWITCH;
+                $val = $src->$_;
             }
             $dst->{$dattr} = $val;
         }

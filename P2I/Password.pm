@@ -1,5 +1,4 @@
 use Modern::Perl;
-use feature 'switch';
 use MooseX::Declare;
 
 role P2I::Password {
@@ -15,9 +14,9 @@ role P2I::Password {
     method mangled_password {
         my $pw = $self->password;
         return unless defined $pw;  # only try to convert defined passwords
-        given(my $type = $self->password_type) {
-            return md5_hex($pw) when 'plain';
-            die "Unhandled password type `$type'";
+        for($self->password_type) {
+            'plain' eq $_ and return md5_hex($pw);
+            die "Unhandled password type `$_'";
         }
     }
 }
