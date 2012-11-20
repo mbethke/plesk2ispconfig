@@ -1,4 +1,5 @@
 use Modern::Perl;
+use feature 'switch';
 use MooseX::Declare;
 
 role P2I::Password {

@@ -1,4 +1,5 @@
 use Modern::Perl;
+use feature 'switch';
 use MooseX::Declare;
 
 class P2I::Converter with P2I::Debug {

@@ -1,5 +1,6 @@
 package P2I::Types;
 use Modern::Perl;
+use feature 'switch';
 use MooseX::Types -declare => [ qw/ MysqlDateTime MysqlBool Bigint IPAddress / ];
 use MooseX::Types::Moose qw/ Bool Str /;
 use MooseX::Types::DateTime::ButMaintained qw/ DateTime /;
