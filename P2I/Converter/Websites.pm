@@ -40,7 +40,7 @@ class P2I::Converter::Websites extends P2I::Converter {
         my $newid = $self->lather('sites_web_domain_add', $client_id, $data);
         my $added = $self->lather('sites_web_domain_get' ,$newid);
         my $sync = $self->config->sync; 
-        $self->add_to_script(sprintf "rsync -e'ssh -p%d' %s\@%s:%s/httpdocs/' '%s/web/'\n",
+        $self->add_to_script(sprintf "rsync -av -e'ssh -p%d' '%s\@%s:%s/httpdocs/' '%s/web/'\n",
             $sync->{port}, $sync->{user}, $sync->{host}, $site->home,
             $added->{document_root}
         );
