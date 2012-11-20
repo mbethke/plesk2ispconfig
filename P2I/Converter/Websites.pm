@@ -91,7 +91,7 @@ class P2I::Converter::Websites extends P2I::Converter {
            $params{remote_access} = 'n';
            $params{remote_ips}    = '';
        }
-       $self->lather('sites_database_add', \%params);
+       $self->lather('sites_database_add', $client_id, \%params);
     }
 
     method _build_web_server_id {
