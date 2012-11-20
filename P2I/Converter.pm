@@ -21,8 +21,9 @@ class P2I::Converter with P2I::Debug {
 
     # Make a SOAP call, automatically converting all arguments via soapize()
     method lather(Str $method, @params) {
+        my $result;
         try {
-            $self->soap_call($method, map { $self->soapize($_) } @params);
+            $result = $self->soap_call($method, map { $self->soapize($_) } @params);
         } catch {
             if($self->config->robust) {
                 print STDERR "SOAP error: $_\n";
@@ -30,6 +31,7 @@ class P2I::Converter with P2I::Debug {
                 die $_;
             }
         };
+        return $result;
     }
 
     # Get a client ID for a given login
