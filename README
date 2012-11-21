@@ -20,12 +20,14 @@ OPTIONS
     --modules MODULE[,MODULE ...]
         Modules to run. Default is to run all available.
     --listmodules
-        List available modules and exit
+        List available modules and exit.
     --domains DOMAIN[,DOMAIN ...]
         Process only these domains.
     --robust
         Print an error message and continue on database or SOAP communication
         errors instead of aborting.
+    --debug
+        Print fairly detailed information to help trace where things go wrong/
 
 
 CONFIGURATION
@@ -49,9 +51,11 @@ defaults:
     ruby: y
     suexec: y
     traffic_quota_lock: n
+    stats_type: webalizer
 server:
   mail: 1.2.3.4
   web: 1.2.3.4
+  db: 1.2.3.4
 plesk:
   db: psa
   host: 127.0.0.1
@@ -61,27 +65,31 @@ plesk:
   sync:
     host: 127.0.0.1
     user: root
+    port: 22
 ispconfig:
   uri: http://localhost:8079/remote/
   proxy: http://localhost:8079/remote/index.php
   user: apiuser
   pass: 123456
-  sync:
-    host: 1.2.3.4
-    user: root
-    port: 2222
+postscript: execute_me_later.sh
+mailsync:
+  writerc: migration_offlineimap.rc
+  fromserver: mail.%d
+  use_ssl: 1
 
 The "plesk" and "ispconfig" sections should be self-explanatory: they specify
 how to access your respective installations. While ISPconfig has a reasonably
 easy SOAP interface (in as far as that can be said about *any* SOAP interface),
 Plesk's homegrown "XML RPC" is a complete train wreck so I speak SQL directly to
-its database. This has only been tested with Plesk 9 though!
+its database. This has only been tested with Plesk 9.5 though!
 
 The "server" section simply specifies your ISPconfig server IPs. If you have
-only one server for mail and web, just specify the same address twice.
+only one server for several functions (web/mail/db), just specify the same
+address repeatedly.
 
 The "defaults" contain settings that are found in ISPconfig but not directly
 equivalent in Plesk. The following might need explanation:
+
 ip_map: map old Plesk web server IPs to new ISPconfig ones. If you had several
         IPs and your sites distributed across them, this will recreate the
         same distribution in ISPconfig.
@@ -91,32 +99,47 @@ maildir: A printf-style string that has "%d" replaced by the mail domain and
         "%a" by the account name. Some people prefer the full mail address in
         the final part, like "/var/vmail/%d/%a@%d", or for very small sites
         "/var/vmail/%a@%d"
+stats_type: The kind of webstats program the site wants. I have no idea whether
+            anything besides "webalizer" really works.
+postscript: The name of a script that plesk2ispconfig will write and that must
+            be executed on the ISPconfig system later to complete the migration.
+            As ISPconfig sensibly hands off more complicated actions such as
+            website creation to a cron job, we can't assume all of that has been
+            done when an API call returns so we have to defer rsyncing of
+            websites and dumping/restoring of databases as well. After the
+            script finishes, copy the file to the target server, wait ~10min and
+            execute it. It uses the user, host and port entries under
+            plesk->sync to log in to the Plesk system using SSH. Every step
+            opens a new connection so you better set up public-key
+            authentication to this account if you want to avoid typing the same
+            password over and over again.
+mailsync: plesk2ispconfig writes an offlineimaprc file named as specified under
+          "writerc". Using this to run the "offlineimap" tool, you can
+          synchronize IMAP accounts from source to target, even if they use
+          different server software. "fromserver" is the server name to connect
+          to, in case it's not the one Plesk runs on; this field can use the
+          "%d" placeholder for the client account's domain name. The default
+          would read IMAP data for user@example.com from mail.example.com.
 
 BUGS AND LIMITATONS
 
 Many. This should be considered alpha-quality software  as many things are not
 quite finished or  even begun:
-- The database format may have changed  in Plesk 10 and cause  things to break.
+- The database format may have changed  in Plesk 10 and cause things to break.
   If you have a Plesk10 installation that you'd like to convert, send me a dump
-  (edit out your  passwords though, they are stored in clear text) and I'll have
+  (edit out your passwords though, they are stored in clear text) and I'll have
   a look.
-- Client databases and name servers are not supported yet.
+- Custom name servers are not supported yet, and client databases only if they
+  are used for a web site; in particular only Drupal sites (sorry, most of our
+  clients use that) are supported for automatic discovery of client credentials.
 - Web stats should be preserved if using the same system (webalizer, awstats
   etc.) on both installations, but are not.
-- You still have to rsync your actual web site contens manually. While this is a
-  difficult thing to do  because ISPconfig  uses asynchronous jobs to create
-  config and site directories (so the directory to sync to will likely appear
-  several minutes after I created the database entry), I could at  least
-  generate a script to run later.
 - Error handling is rather crude.
 
 
 REQUIREMENTS
-
-	Packages:
-	liblocal-lib-perl
-
         Perl and the following modules:
+	local::lib
         Modern::Perl
         Moose
         MooseX::Declare

@@ -26,7 +26,7 @@ plesk:
   sync:
     host: 127.0.0.1
     user: root
-    port: 2222
+    port: 22
 ispconfig:
   uri: http://localhost:8079/remote/
   proxy: http://localhost:8079/remote/index.php
@@ -34,6 +34,6 @@ ispconfig:
   pass: 123456
 postscript: execute_me_later.sh
 mailsync:
-  writerc: migration_oli.rc
+  writerc: migration_offlineimap.rc
   fromserver: mail.%d
   use_ssl: 1
