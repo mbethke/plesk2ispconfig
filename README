@@ -8,9 +8,9 @@ SYNOPSIS
 
 DESCRIPTION
 
-This script will convert the most tedious parts of your Plesk installation to
-ISPconfig, namely client accounts, mail addresses (mailboxes, aliases and
-forwards) and web sites. You configure it through a simple config file, mainly
+This script helps you migrate most of your Plesk installation to ISPconfig,
+namely client accounts, mail addresses (mailboxes, aliases and forwards), web
+sites and some databases. You configure it through a simple config file, mainly
 for the credentials to access your installations and your server addresses, and
 the rest should be fully automatic.
 
