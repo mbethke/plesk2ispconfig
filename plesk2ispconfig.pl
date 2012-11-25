@@ -3,7 +3,7 @@
 #
 #         FILE: plesk2ispconfig.pl
 #
-#        USAGE: ./plesk2ispconfig.pl [--config=file.yml]
+#        USAGE: ./plesk2ispconfig.pl [--config=file.yml] [more options, see README]
 #
 #  DESCRIPTION: Migrate stuff from Plesk to ISPconfig3
 #
@@ -13,7 +13,8 @@
 #      VERSION: 0.1
 #      CREATED: 08/28/2012 11:06:28 PM
 #===============================================================================
-use local::lib;
+use FindBin;
+use lib "$FindBin::Bin/lib";
 use Modern::Perl;
 use P2I::App;
 
