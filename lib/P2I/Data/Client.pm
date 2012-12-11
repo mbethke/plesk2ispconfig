@@ -1,7 +1,7 @@
 use Modern::Perl;
 use MooseX::Declare;
 
-class P2I::Data::Client with P2I::Password {
+class P2I::Data::Client with P2I::Role::Password {
     use MooseX::Types::DateTime::ButMaintained qw/ DateTime /;
     use MooseX::Types::Moose ':all';
     use P2I::Types ':all';

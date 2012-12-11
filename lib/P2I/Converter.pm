@@ -1,7 +1,7 @@
 use Modern::Perl;
 use MooseX::Declare;
 
-class P2I::Converter with P2I::Debug {
+class P2I::Converter with P2I::Role::Debug {
     use MooseX::Types::Moose ':all';
     use P2I::Types qw/ IPAddress /;
     use P2I::PleskDB;

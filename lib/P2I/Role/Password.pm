@@ -1,7 +1,7 @@
 use Modern::Perl;
 use MooseX::Declare;
 
-role P2I::Password {
+role P2I::Role::Password {
     use Moose::Util::TypeConstraints;
     use MooseX::Types::Moose ':all';
     use Digest::MD5 'md5_hex';

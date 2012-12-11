@@ -1,7 +1,7 @@
 use Modern::Perl;
 use MooseX::Declare;
 
-class P2I::Data::Mail::Box with P2I::Password {
+class P2I::Data::Mail::Box with P2I::Role::Password {
     use MooseX::Types::Moose ':all';
     use Moose::Util::TypeConstraints;
     use P2I::Types qw/ MysqlBool Bigint /;

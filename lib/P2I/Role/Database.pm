@@ -2,7 +2,7 @@ use Modern::Perl;
 use MooseX::Declare;
 
 role P2I::Role::Database {
-    requires [qw/ config get_named_server lather /];
+    requires qw/ config get_named_server lather /;
     use Carp;
     use Moose::Util::TypeConstraints;
     use MooseX::Types::Moose ':all';
@@ -11,7 +11,7 @@ role P2I::Role::Database {
     has db_server_id =>  (is => 'ro', isa => Int, lazy => 1, builder => '_build_db_server_id');
 
     method _add_database(Int $client_id, HashRef $credentials) {
-        croak "Field `$_' missing in credentials" unless $credentials->{$_}
+        defined $credentials->{$_} or croak "Field `$_' missing in credentials"
             for(qw/ database user password /);
         my %params = (
             server_id        => $self->db_server_id,

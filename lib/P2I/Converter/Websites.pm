@@ -1,16 +1,11 @@
 use Modern::Perl;
 use MooseX::Declare;
 
-class P2I::Converter::Websites extends P2I::Converter {
+class P2I::Converter::Websites extends P2I::Converter with P2I::Role::Database {
     use MooseX::Types::Moose ':all';
     use P2I::Data::Website;
     use P2I::Data::WebSubdomain;
     use Data::Dumper;
-
-    has web_server_id => (is => 'ro', isa => Int,
-                    lazy => 1, builder => '_build_web_server_id');
-    has db_server_id =>  (is => 'ro', isa => Int,
-                    lazy => 1, builder => '_build_db_server_id');
 
     method convert {
         my $db = $self->db;
@@ -71,35 +66,6 @@ class P2I::Converter::Websites extends P2I::Converter {
         } else {
             print STDERR "Warning: no database settings found for this site (home: $home), please adjust manually!\n";
         }
-    }
-
-    method _add_database(Int $client_id, HashRef $credentials) {
-       my %params = (
-           server_id        => $self->db_server_id,
-           type             => 'mysql',     # TODO nothing else supported yet
-           database_name    => $credentials->{database},
-           database_user    => $credentials->{user},
-           database_password=> $credentials->{password},
-           database_charset => 'UTF8',      # TODO always?
-           remote_access    => 'y',
-           remote_ips       => $self->config->server('web'),
-           active           => 'y', 
-       );
-       $self->dbg("\t\t" . __PACKAGE__ . "::_add_database($client_id, $credentials->{database}/$credentials->{user})");
-       if($self->web_server_id eq $self->db_server_id) {
-           # Web and DB server are on the same host, so overwrite these settings
-           $params{remote_access} = 'n';
-           $params{remote_ips}    = '';
-       }
-       $self->lather('sites_database_add', $client_id, \%params);
-    }
-
-    method _build_web_server_id {
-        return $self->get_server_id($self->config->server('web'));
-    }
-
-    method _build_db_server_id {
-        return $self->get_server_id($self->config->server('db'));
     }
 
     method _field_map {
