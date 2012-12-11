@@ -41,11 +41,18 @@ class P2I::Converter with P2I::Debug {
         return $client->{client_id};
     }
 
+    # Get a server ID by IP address
     # method get_server_id(IPAddress $ip) { TODO why does this break?
     method get_server_id(Str $ip) {
         my $servers = $self->lather('server_get_serverid_by_ip', $ip);
         die "Server with address $ip not found" unless @$servers;
         return $servers->[0]{server_id};
+    }
+
+    # Get a server ID for a name defined in the config ("web", "db", "mail", etc.?)
+    method get_named_server(Str $name) {
+        my $ip = $self->config->server('web') // croak "Server name `$name' not defined in config";
+        return $self->get_server_id($ip);
     }
 
     # Add a bit of text to some file
