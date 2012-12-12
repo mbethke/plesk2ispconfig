@@ -1,7 +1,7 @@
 use Modern::Perl;
 use MooseX::Declare;
 
-role P2I::Role::Database {
+role P2I::Role::DatabaseCreator {
     requires qw/ config get_named_server lather /;
     use Carp;
     use Moose::Util::TypeConstraints;
@@ -10,7 +10,7 @@ role P2I::Role::Database {
     has web_server_id => (is => 'ro', isa => Int, lazy => 1, builder => '_build_web_server_id');
     has db_server_id =>  (is => 'ro', isa => Int, lazy => 1, builder => '_build_db_server_id');
 
-    method _add_database(Int $client_id, HashRef $credentials) {
+    method add_database(Int $client_id, HashRef $credentials) {
         defined $credentials->{$_} or croak "Field `$_' missing in credentials"
             for(qw/ database user password /);
         my %params = (
@@ -31,6 +31,15 @@ role P2I::Role::Database {
             $params{remote_ips}    = '';
         }
         $self->lather('sites_database_add', $client_id, \%params);
+        
+        # If sync parameters are defined, add dump/restore command to script
+        my $sync = $self->config->sync;
+        $sync and $self->add_to_script(
+            sprintf qq[ssh -p%d %s@%s "mysqldump -u%s -p'%s' %s | bzip2" | ].
+            qq[bzcat | mysql -u%s -p'%s' -D%s\n],
+            @$sync{qw/ port user host /},
+            (@$credentials{qw/ user password database /})x2
+        );
     }
 
     method _build_web_server_id { return $self->get_named_server('web'); }

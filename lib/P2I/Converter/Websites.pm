@@ -1,7 +1,7 @@
 use Modern::Perl;
 use MooseX::Declare;
 
-class P2I::Converter::Websites extends P2I::Converter with P2I::Role::Database {
+class P2I::Converter::Websites extends P2I::Converter with P2I::Role::DatabaseCreator {
     use MooseX::Types::Moose ':all';
     use P2I::Data::Website;
     use P2I::Data::WebSubdomain;
@@ -55,14 +55,7 @@ class P2I::Converter::Websites extends P2I::Converter with P2I::Role::Database {
         # 'mysqli://mueller:xxxpassxxx@localhost/mueller_db'
         $res =~ m!mysqli?://(?<user>\w+):(?<password>[^\@]+)\@(?<host>\w+)/(?<database>\w+)!;
         if(keys %+) {
-            $self->_add_database($client_id, {%+});
-            #$self->add_to_script(sprintf q[mysql -uroot -p -e"CREATE DATABASE '%s'"\n], $+{database});
-            #$self->add_to_script(
-            #    sprintf q[mysql -uroot -p -e"GRANT ALL PRIVILEGES ON %s.* TO '%s'@localhost IDENTIFIED BY '%s\n'],
-            #    $+{database}, $+{user}, $+{password});
-            $self->add_to_script(
-                sprintf qq[ssh -p%d %s@%s "mysqldump -u%s -p'%s' %s | bzip2" | bzcat | mysql -u%s -p'%s' -D%s\n],
-                @$sync{qw/ port user host /}, $+{user}, $+{password}, $+{database}, $+{user}, $+{password}, $+{database});
+            $self->add_database($client_id, {%+});
         } else {
             print STDERR "Warning: no database settings found for this site (home: $home), please adjust manually!\n";
         }
