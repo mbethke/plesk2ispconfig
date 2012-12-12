@@ -8,7 +8,7 @@ class P2I::App with MooseX::Getopt {
     use P2I::Config;
 
     has config      => (is => 'rw', isa => Str, default => 'config.yml');
-    has modules     => (is => 'rw', isa => Str, default => 'Clients,Domains,Mail,Websites');
+    has modules     => (is => 'rw', isa => Str, default => 'Clients,Domains,Databases,Mail,Websites');
     has domains     => (is => 'rw', isa => Str);
     has listmodules => (is => 'rw', isa => Bool, default => 0);
     has debug       => (is => 'rw', isa => Bool, default => 0);
@@ -57,7 +57,7 @@ EOUSE
         if(my $domains = $self->domains) {
             $self->cfg->do_domains([ split /,/, $domains ]);
         }
-        $self->cfg->$_($self->$_) for qw/robust debug /;
+        $self->cfg->$_($self->$_) for qw/ robust debug /;
 
         # Remove scripts from previous runs
         unlink $self->cfg->postscript;
