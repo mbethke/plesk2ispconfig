@@ -27,8 +27,7 @@ OPTIONS
         Print an error message and continue on database or SOAP communication
         errors instead of aborting.
     --debug
-        Print fairly detailed information to help trace where things go wrong/
-
+        Print fairly detailed information to help trace where things go wrong.
 
 CONFIGURATION
 
@@ -110,12 +109,12 @@ postscript: The name of a script that plesk2ispconfig will write and that must
             script finishes, copy the file to the target server, wait ~10min and
             execute it. It uses the user, host and port entries under
             plesk->sync to log in to the Plesk system using SSH. Every step
-            opens a new connection so you better set up public-key
+            opens a new connection so you'd better set up public-key
             authentication to this account if you want to avoid typing the same
             password over and over again.
 mailsync: plesk2ispconfig writes an offlineimaprc file named as specified under
           "writerc". Using this to run the "offlineimap" tool, you can
-          synchronize IMAP accounts from source to target, even if they use
+          synchronize IMAP accounts from source to target even if they use
           different server software. "fromserver" is the server name to connect
           to, in case it's not the one Plesk runs on; this field can use the
           "%d" placeholder for the client account's domain name. The default
@@ -123,19 +122,16 @@ mailsync: plesk2ispconfig writes an offlineimaprc file named as specified under
 
 BUGS AND LIMITATONS
 
-Many. This should be considered alpha-quality software  as many things are not
-quite finished or  even begun:
-- The database format may have changed  in Plesk 10 and cause things to break.
+Many. This should be considered alpha-quality software as many things are not
+quite finished.
+- The database format may have changed in Plesk 10 and cause things to break.
   If you have a Plesk10 installation that you'd like to convert, send me a dump
   (edit out your passwords though, they are stored in clear text) and I'll have
   a look.
-- Custom name servers are not supported yet, and client databases only if they
-  are used for a web site; in particular only Drupal sites (sorry, most of our
-  clients use that) are supported for automatic discovery of client credentials.
+- Custom name servers are not supported yet.
 - Web stats should be preserved if using the same system (webalizer, awstats
   etc.) on both installations, but are not.
 - Error handling is rather crude.
-
 
 REQUIREMENTS
         Perl and the following modules:
