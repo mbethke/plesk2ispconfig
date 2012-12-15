@@ -133,6 +133,17 @@ quite finished.
   etc.) on both installations, but are not.
 - Error handling is rather crude.
 
+If you should run into an error that says "SOAP error for method
+`domains_domain_add': You do not have the permissions to access this function.",
+this is likely an ISPconfig bug though. You have two possibilities to work
+around it:
+a) Find the function "domains_domain_add" in
+/usr/local/ispconfig/interface/lib/classes/remoting.inc.php and delete the whole
+checkPerm() call (i.e. all but the function's last line)
+b) Disable the Domains module (it's not essential for the migration to work) by
+calling the converter with "--modules Clients,Databases,Mail,Websites"
+
+
 REQUIREMENTS
         Perl and the following modules:
 	local::lib
