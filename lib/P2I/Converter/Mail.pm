@@ -135,8 +135,9 @@ class P2I::Converter::Mail extends P2I::Converter {
             print STDERR "Offlineimap data for `$acct' already present!\n";
             return;
         }
-        $acct =~ s/[\@.]/_/g;
-        $d->{$acct} = { map { $_ => $mbox->$_ } qw / login domain password / };
+        my $acctid = $acct;
+        $acctid =~ s/[\@.]/_/g;
+        $d->{$acctid} = { map { $_ => $mbox->$_ } qw / email domain password / };
     }
 
     {
@@ -178,8 +179,9 @@ EOF
         $self->add_to_file($file, sprintf($oli_header, join(',', keys %$oli)));
         
         while(my ($acct, $d) = each %$oli) {
-            my $user    = $d->{login};
-            my $login   = "$user\@$d->{domain}";
+            my $login   = $d->{email};
+            my $user    = $login;
+            $user       =~ s'@.*'';
             my $host    = $mailsync->{fromserver};
             $host       =~ s/%u/$user/g;
             $host       =~ s/%d/$d->{domain}/g;
