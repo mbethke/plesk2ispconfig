@@ -34,11 +34,15 @@ class P2I::Converter::Websites extends P2I::Converter with P2I::Role::DatabaseCr
         $self->dbg("\tCreating site: $data->{domain}");
         my $newid = $self->lather('sites_web_domain_add', $client_id, $data);
         my $added = $self->lather('sites_web_domain_get' ,$newid);
-        my $sync = $self->config->sync; 
+        my $sync = $self->config->sync;
         $self->add_to_script(sprintf "rsync -zav -e'ssh -p%d' '%s\@%s:%s/httpdocs/' '%s/web/'\n",
             $sync->{port}, $sync->{user}, $sync->{host}, $site->home,
             $added->{document_root}
         );
+        $self->add_to_script(sprintf "chown --reference='%s/../tmp' '%s'\n",
+            $added->{document_root}, $added->{document_root}
+        );
+        $self->add_to_script(sprintf "chmod o+rx '%s'\n", $added->{document_root});
         return $added;
     }
 
