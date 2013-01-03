@@ -39,26 +39,7 @@ class P2I::Converter::Websites extends P2I::Converter with P2I::Role::DatabaseCr
             $sync->{port}, $sync->{user}, $sync->{host}, $site->home,
             $added->{document_root}
         );
-        $self->_check_site_db($client_id, $site->home);
         return $added;
-    }
-
-    # This will try and determine the database name and credentials used for the site. If found, prints
-    # commands to recrate the database and dump/restore its contents to the script to execute later.
-    # Currently only supports Drupal sites
-    method _check_site_db(Int $client_id, Str $home) {
-        $self->dbg("\t" . __PACKAGE__ . "::_check_site_db($client_id, $home)");
-        my $sync = $self->config->sync; 
-        my $cmd = sprintf q[ssh -p%d %s@%s "grep 2>/dev/null --no-filename '^\$db_url' %s/http{,s}docs/sites/default/settings.php"],
-        @$sync{qw/ port user host /}, $home;
-        my $res = qx[$cmd]; # syntax highlighter workaround
-        # 'mysqli://mueller:xxxpassxxx@localhost/mueller_db'
-        $res =~ m!mysqli?://(?<user>\w+):(?<password>[^\@]+)\@(?<host>\w+)/(?<database>\w+)!;
-        if(keys %+) {
-            $self->add_database($client_id, {%+});
-        } else {
-            print STDERR "Warning: no database settings found for this site (home: $home), please adjust manually!\n";
-        }
     }
 
     method _field_map {
