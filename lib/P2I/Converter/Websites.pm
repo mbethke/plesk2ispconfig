@@ -75,8 +75,8 @@ class P2I::Converter::Websites extends P2I::Converter with P2I::Role::DatabaseCr
             ssi                 => booltoyn('ssi'),
             suexec              => \$def->{suexec},
             errordocs           => 1,
-            is_subdomainwww     => 1,   # TODO how to determine? 
-            subdomain           => \'', # TODO enum('none','www','*'))
+            is_subdomainwww     => 0,   # TODO how to determine? 
+            subdomain           => \'www', # TODO enum('none','www','*'))
             php                 => booltoyn('php'),
             ruby                => \$def->{ruby},
             redirect_type       => \'',
