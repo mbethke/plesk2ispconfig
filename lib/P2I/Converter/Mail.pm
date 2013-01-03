@@ -96,7 +96,7 @@ class P2I::Converter::Mail extends P2I::Converter {
         return {
             email                   => 'email',
             login                   => 'email',
-            password                => 'mangled_password',
+            password                => 'password',
             name                    => 'realname',
             uid                     => \$def->{uid},
             gid                     => \$def->{gid},

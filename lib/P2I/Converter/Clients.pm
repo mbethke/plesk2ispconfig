@@ -94,7 +94,7 @@ class P2I::Converter::Clients extends P2I::Converter {
             limit_client            => 0,
             parent_client_id        => undef,
             username                => 'login',
-            password                => 'mangled_password',
+            password                => 'password',
             language                => 'locale',
             usertheme               => undef,
             template_master         => 0,
