@@ -33,18 +33,22 @@ class P2I::Converter::Websites extends P2I::Converter with P2I::Role::DatabaseCr
         $self->_map_fields($site, $data, $self->_field_map);
         $self->dbg("\tCreating site: $data->{domain}");
         my $newid = $self->lather('sites_web_domain_add', $client_id, $data);
+        unless(defined $newid) {
+            $self->dbg("\tSite creation failed");
+            return;
+        }
         my $added = $self->lather('sites_web_domain_get' ,$newid);
-        my $sync = $self->config->sync;
+        my $sync = $self->config->plesk->{sync};
         if($added) {
             # $added will be undef if --robust is on and there was an error
             $self->add_to_script(sprintf "rsync -zav -e'ssh -p%d' '%s\@%s:%s/httpdocs/' '%s/web/'\n",
                 $sync->{port}, $sync->{user}, $sync->{host}, $site->home,
                 $added->{document_root}
             );
-            $self->add_to_script(sprintf "chown --reference='%s/../tmp' '%s'\n",
+            $self->add_to_script(sprintf "chown --reference='%s/tmp' '%s'\n",
                 $added->{document_root}, $added->{document_root}
             );
-            $self->add_to_script(sprintf "chmod o+rx '%s'\n", $added->{document_root});
+            $self->add_to_script(sprintf "chmod o+rx '%s/web'\n", $added->{document_root});
         }
         return $added;
     }
