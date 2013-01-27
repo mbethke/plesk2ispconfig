@@ -39,17 +39,25 @@ class P2I::Converter::Websites extends P2I::Converter with P2I::Role::DatabaseCr
         }
         my $added = $self->lather('sites_web_domain_get' ,$newid);
         my $sync = $self->config->plesk->{sync};
-        if($added) {
-            # $added will be undef if --robust is on and there was an error
+        # $added will be undef if --robust is on and there was an error
+        return unless $added;
+        if($site->sub_domain) {
+            # Subdomains come from a different directory in Plesk
+            $self->add_to_script(sprintf "rsync -zav -e'ssh -p%d' '%s\@%s:%s/subdomains/%s/httpdocs/' '%s/web/'\n",
+                $sync->{port}, $sync->{user}, $sync->{host}, $site->home, $site->sub_domain,
+                $added->{document_root}
+            );
+        } else {
+            # This is a regular domain
             $self->add_to_script(sprintf "rsync -zav -e'ssh -p%d' '%s\@%s:%s/httpdocs/' '%s/web/'\n",
                 $sync->{port}, $sync->{user}, $sync->{host}, $site->home,
                 $added->{document_root}
             );
-            $self->add_to_script(sprintf "chown --reference='%s/tmp' '%s'\n",
-                $added->{document_root}, $added->{document_root}
-            );
-            $self->add_to_script(sprintf "chmod o+rx '%s/web'\n", $added->{document_root});
         }
+        $self->add_to_script(sprintf "chown --reference='%s/tmp' '%s'\n",
+            $added->{document_root}, $added->{document_root}
+        );
+        $self->add_to_script(sprintf "chmod o+rx '%s/web'\n", $added->{document_root});
         return $added;
     }
 

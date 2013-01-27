@@ -20,6 +20,7 @@ class P2I::Data::Website {
     has [qw/ real_traffic quota /] =>
         (is => 'ro', isa => Bigint, required => 1);
 
+    has sub_domain       => (is => 'ro', isa => 'Str');
     has parent_domain    => (is => 'ro', isa => 'Maybe[Str]',                         required => 1);
     has htype            => (is => 'ro', isa => enum([qw/ vrt_hst std_fwd none /]),   required => 1);
     has webstat          => (is => 'ro', isa => enum([qw/ none webalizer awstats /]), required => 1);

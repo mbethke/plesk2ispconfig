@@ -48,7 +48,7 @@ class P2I::DB::Websites extends P2I::PleskDB {
                 h.real_traffic, h.fp, h.fp_ssl, h.fp_enable, h.fp_adm,
                 h.webstat, h.traffic_bandwidth, h.fp_pass,
                 h.max_connection, h.php_handler_type,
-                CONCAT(u.name, '.', d.name) domain,
+                u.name sub_domain, CONCAT(u.name, '.', d.name) domain,
                 d.name parent_domain, d.htype,
                 s.login, s.home, s.shell, s.quota,
                 a.type password_type, a.password,
