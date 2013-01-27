@@ -44,7 +44,7 @@ class P2I::Converter::Mail extends P2I::Converter {
         }
 
         # Check whether is'a local mailbox or a forward
-        $mbox->redirect and return $self->_create_redirect($client_id, $mbox);
+        return $self->_create_redirect($client_id, $mbox) unless $mbox->postbox;
         return $self->_create_mailbox($client_id, $mbox);
     }
 
@@ -102,7 +102,7 @@ class P2I::Converter::Mail extends P2I::Converter {
             gid                     => \$def->{gid},
             maildir                 => sub { $self->_create_maildir(shift, $def) },
             quota                   => sub { my $q=shift->quota; -1==$q ? 0 : $q },
-            cc                      => '',
+            cc                      => sub { my $self=shift; $self->redirect ? $self->redir_addr : ''},
             homedir                 => \$def->{homedir},
             autoresponder           => \'n',
             autoresponder_start_date=> '',
