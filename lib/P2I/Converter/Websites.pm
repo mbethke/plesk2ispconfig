@@ -43,13 +43,13 @@ class P2I::Converter::Websites extends P2I::Converter with P2I::Role::DatabaseCr
         return unless $added;
         if($site->sub_domain) {
             # Subdomains come from a different directory in Plesk
-            $self->add_to_script(sprintf "rsync -zav --delete -e'ssh -p%d' '%s\@%s:%s/subdomains/%s/httpdocs/' '%s/web/'\n",
+            $self->add_to_script(sprintf "rsync -za --delete -e'ssh -p%d' '%s\@%s:%s/subdomains/%s/httpdocs/' '%s/web/'\n",
                 $sync->{port}, $sync->{user}, $sync->{host}, $site->home, $site->sub_domain,
                 $added->{document_root}
             );
         } else {
             # This is a regular domain
-            $self->add_to_script(sprintf "rsync -zav -e'ssh -p%d' '%s\@%s:%s/httpdocs/' '%s/web/'\n",
+            $self->add_to_script(sprintf "rsync -za -e'ssh -p%d' '%s\@%s:%s/httpdocs/' '%s/web/'\n",
                 $sync->{port}, $sync->{user}, $sync->{host}, $site->home,
                 $added->{document_root}
             );
