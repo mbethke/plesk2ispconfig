@@ -47,7 +47,7 @@ class P2I::PleskDB {
     # Create an SQL snippet for a variable number of domains
     # Returns both SQL and a reference to the domain array
     method domain_sql(Maybe[Str] $prepend) {
-        my $doms = $self->config->do_domains;
+        my $doms = $self->config->do_domains // [];
         if(@$doms) {
             return ($doms, ($prepend // '') . ' IN (' . join(',', ('?') x @$doms) . ')');
         }
