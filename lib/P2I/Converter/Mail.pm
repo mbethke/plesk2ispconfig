@@ -7,7 +7,6 @@ class P2I::Converter::Mail extends P2I::Converter {
     use P2I::Types qw/ IPAddress /;
     use Moose::Util::TypeConstraints;
     use Data::Dumper;
-    use P2I::ISPconfigSOAP;
 
     has domains     => (is => 'ro', isa => HashRef, default => sub { {} });
     has server_id   => (is => 'ro', isa => Int,

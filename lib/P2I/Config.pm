@@ -30,6 +30,7 @@ class P2I::Config {
     method ispconfig    { return $self->_data->{ispconfig}; }
     method postscript   { return $self->_data->{postscript}; }
     method mailsync     { return $self->_data->{mailsync}; }
+    method databases    { return $self->_data->{databases}; }
 
     method sync {
         my $sync = { %{$self->_data->{plesk}{sync}} };

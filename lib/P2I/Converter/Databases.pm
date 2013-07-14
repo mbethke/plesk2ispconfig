@@ -12,12 +12,27 @@ class P2I::Converter::Databases extends P2I::Converter with P2I::Role::DatabaseC
         
         for my $db ($self->db->get_databases) {
             try {
-                $self->add_database(
-                    $self->get_client_id($db->client_login),
-                    {
-                        database    => $db->name,
-                        user        => $db->login,
-                        password    => $db->password,
+                my $client_id = $self->get_client_id($db->client_login);
+                my $db_name = $db->name;
+                my $db_user = $db->login;
+                my ($db_new_name, $db_new_user) = ($db_name, $db_user);
+                my $rewrite = $self->config->databases->{rewrite_names};
+                if($self->config->databases->{rewrite_names}) {
+                    # Change user and db names to ISPconfig scheme
+                    $db_new_name = 'c_'  . $client_id . $db_name;
+                    $db_new_user = 'cu_' . $client_id . $db_user;
+                }
+                
+                # In any case, do some fixing up so ISPconfig will not complain
+                # about illegal characters
+                s/-/_/g for($db_new_name, $db_new_user);
+
+                $self->add_database($client_id, {
+                        database        => $db_name,
+                        user            => $db_user,
+                        password        => $db->password,
+                        new_database    => $db_new_name,
+                        new_user        => $db_new_user,
                     }
                 );
             } catch {

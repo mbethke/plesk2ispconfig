@@ -120,15 +120,39 @@ mailsync: plesk2ispconfig writes an offlineimaprc file named as specified under
           "%d" placeholder for the client account's domain name. The default
           would read IMAP data for user@example.com from mail.example.com.
 
+databases: These settings control the migration of databases.
+           Currently the only setting is a boolean value under "rewrite_names"
+           that controls whether or not to rewrite database names to ISPconfig's
+           scheme. Both have their drawbacks:
+           - If you do rewrite the names, database and user names will get a
+           prefix of c_$CLIENTID and cu_$CLIENTID respectively. Changing the
+           database settings in ISPconfig will work but you'll have to change
+           the credentials in all installed web applications, CMSs and whatever
+           uses these databases. Theoretically we could guess the system and add
+           an edit script after webspace rsyncing but this will probably only
+           ever happen for the most common ones like Joomla, Wordpress and
+           Drupal.
+           - If you do not rewrite the names, you save the hassle of changing
+           each site's DB credentials but changing anything about the DB later
+           in ISPconfig will fail. Then the only solution is to create a new
+           database in ISPconfig, dump the old one and restore it into the new
+           one before DROPping it.
+           
 BUGS AND LIMITATONS
 
-Many. This should be considered alpha-quality software as many things are not
-quite finished.
+We're getting there. The script has done its first complete migration with only
+little manual cleanup afterwards, but one should still take care and give the
+resulting shell scripts at least a quick looking over before running them.
+Particularly the following things should be kept in mind if they apply to your
+system:
+
 - The database format may have changed in Plesk 10 and cause things to break.
   If you have a Plesk10 installation that you'd like to convert, send me a dump
   (edit out your passwords though, they are stored in clear text) and I'll have
   a look.
 - Custom name servers are not supported yet.
+- The only database server supported is mysql. I haven't had a need
+  for anything else, but support shouldn't be hard to add.
 - Web stats should be preserved if using the same system (webalizer, awstats
   etc.) on both installations, but are not.
 - Error handling is rather crude.

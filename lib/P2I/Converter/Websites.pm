@@ -58,6 +58,8 @@ class P2I::Converter::Websites extends P2I::Converter with P2I::Role::DatabaseCr
             $added->{document_root}, $added->{document_root}
         );
         $self->add_to_script(sprintf "chmod o+rx '%s/web'\n", $added->{document_root});
+        # This is for later use by the database module
+        $self->add_to_script(sprintf qq[CLIENTPATH_%d="%s/../"\n], $client_id, $added->{document_root});
         return $added;
     }
 
