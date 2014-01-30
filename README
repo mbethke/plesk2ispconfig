@@ -92,8 +92,8 @@ equivalent in Plesk. The following might need explanation:
 ip_map: map old Plesk web server IPs to new ISPconfig ones. If you had several
         IPs and your sites distributed across them, this will recreate the
         same distribution in ISPconfig.
-allow_override: Apache-style directive as you'd put into an .htaccess file for
-        every site.
+allow_override: Apache-style directive for .htaccess override permissions
+                for every site.
 maildir: A printf-style string that has "%d" replaced by the mail domain and
         "%a" by the account name. Some people prefer the full mail address in
         the final part, like "/var/vmail/%d/%a@%d", or for very small sites
