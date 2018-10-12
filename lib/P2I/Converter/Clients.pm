@@ -3,6 +3,7 @@ use MooseX::Declare;
 
 class P2I::Converter::Clients extends P2I::Converter {
     use P2I::ISPconfigSOAP;
+    use P2I::Data::Client;
 
     use constant DEFAULT_WEB_PHP_OPTIONS  => 'mod,fast-cgi,suphp'; # no,cgi
     use constant DEFAULT_SSH_CHROOT       => 'no'; # jailkit
@@ -12,6 +13,8 @@ class P2I::Converter::Clients extends P2I::Converter {
         my %parentmap;
 
         $self->dbg(__PACKAGE__ . '::convert');
+
+        P2I::Data::Client->cipher($self->config->cipher);
 
         # TODO is this necessary at all or is "admin" the only one w/o parent anyway?
         for my $id ($self->db->list_parents) {
