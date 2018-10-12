@@ -13,6 +13,7 @@ class P2I::Config {
     has do_domains  => (is => 'rw', isa => ArrayRef);
     has robust      => (is => 'rw', isa => Bool);
     has debug       => (is => 'rw', isa => Bool);
+    has cipher      => (is => 'rw', isa => 'Crypt::Rijndael');
 
     method server(Str $type) {
         croak("type arg must be `mail', `db' or `web'")
@@ -67,6 +68,7 @@ class P2I::Config {
                 port => 1,
                 user => 1,
                 pass => 1,
+                key  => 1,
                 sync => {
                     user => 1,
                     host => 1,
