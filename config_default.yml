@@ -23,6 +23,7 @@ plesk:
   port: 3306
   user: pleskuser
   pass: pleskpass
+  key: secret_key_file
   sync:
     host: 127.0.0.1
     user: root
