@@ -15,14 +15,14 @@ class P2I::Config {
     has debug       => (is => 'rw', isa => Bool);
 
     method server(Str $type) {
-        croak("type arg must be `mail', `db' or `web'")
-            unless $type ~~ [qw/ mail web db /];
+        croak("type arg must be `mail', `dns', `db' or `web'")
+            unless $type ~~ [qw/ mail web db dns /];
         return $self->_data->{server}{$type};
     }
 
     method defaults(Str $type) {
-        croak("type arg must be `mail' or `web'")
-            unless $type ~~ [qw/ mail web /];
+        croak("type arg must be `mail', `dns' or `web'")
+            unless $type ~~ [qw/ mail web dns /];
         return $self->_data->{defaults}{$type};
     }
 
@@ -43,6 +43,7 @@ class P2I::Config {
             server => {
                 mail => 1,
                 web => 1,
+                dns => 1,
                 db => 1
             },
             defaults => {
@@ -59,6 +60,10 @@ class P2I::Config {
                     allow_override      => 1,
                     ip_map              => {},
                     stats_type          => 1,
+                },
+                dns => {
+                    ns   => 1,
+                    xfer => 1,
                 },
             },
             plesk => {
