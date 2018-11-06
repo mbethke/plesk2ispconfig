@@ -35,4 +35,8 @@ class P2I::DB::Mail extends P2I::PleskDB {
             @$doms
         );
     }
+
+    method get_aliasdomains(Str $domain) {
+        return $self->query_flat(q[ SELECT a.name FROM domainaliases a JOIN domains d ON d.id=a.dom_id WHERE a.mail='true' AND d.name=? ], $domain);
+    }
 }
