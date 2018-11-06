@@ -157,12 +157,14 @@ EOF
         my $oli_repo = <<EOF;
 [Repository %s]
 type = IMAP
+readonly = %s
 ssl = %s
 maxconnections = 10
 remoteport = %d
 remotehost = %s
 remoteuser = %s
 remotepass = %s
+nametrans: %s
 
 EOF
 
@@ -187,9 +189,9 @@ EOF
             
             my $section = sprintf($oli_acct, ($acct) x 3);
             $section .=   sprintf($oli_repo,
-                    "${acct}_Old", @sslparams, $host, $login, $d->{password});
+                    "${acct}_Old", 'True', @sslparams, $host, $login, $d->{password}, "lambda folder: 'Junk' if folder == 'INBOX.Spam' else re.sub(r'^INBOX.', r'', folder)");
             $section .=   sprintf($oli_repo,
-                    "${acct}_New", @sslparams, $self->config->server('mail'), $login, $d->{password});
+                    "${acct}_New", 'False', @sslparams, $self->config->server('mail'), $login, $d->{password}, "lambda folder: 'INBOX.Spam' if folder == 'Junk' else 'INBOX' if folder == 'INBOX' else 'INBOX.' + folder");
             $self->add_to_file($file, $section);
         }
     }
