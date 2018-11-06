@@ -31,6 +31,13 @@ class P2I::Converter::Mail extends P2I::Converter {
             $self->dbg("\tConverting alias ", $alias->login, "(userID $clients{$alias->login})");
             $self->_create_alias($clients{$alias->login}, $alias);
         }
+
+        # Convert email lists
+        for my $list ($self->db->get_maillists) {
+            $clients{$list->login} //= $self->get_client_id($list->login);
+            $self->dbg("\tConverting list ", $list->name, " (userID ", $list->login, ", $clients{$list->login})");
+            $self->_create_list($clients{$list->login}, $list);
+        }
     }
 
     method _create_mailbox_or_redirect(Int $client_id, $mbox) {
@@ -83,6 +90,32 @@ class P2I::Converter::Mail extends P2I::Converter {
                 type        => 'alias',
                 active      => 'y',
             });
+    }
+
+    method _create_list(Int $client_id, $list) {
+        $self->dbg("\tCreating email list ", $list->name, " for ", $list->domain, " belonging to $client_id");
+        $self->lather('mail_mailinglist_add', $client_id, {
+                server_id   => $self->server_id,
+                domain      => $list->domain,
+                email       => $list->email, # !!!TBD!!!
+                password    => $list->password, # !!!TBD!!!
+                listname    => $list->name,
+            });
+        my $sync = $self->config->plesk->{sync};
+        # Copy the list data
+        my $cmds = sprintf "echo 'Copy mailing list'\nrsync -za -e'ssh -p%d' %s\@%s:/var/lib/mailman/lists/%s /var/lib/mailman/lists\n",
+            $sync->{port}, $sync->{user}, $sync->{host}, $list->name
+        ;
+        # Copy the list archive
+        foreach my $path (map {($_, "$_.mbox")} $list->name) {
+            $cmds .= sprintf "rsync -za -e'ssh -p%d' %s\@%s:/var/lib/mailman/archives/private/%s /var/lib/mailman/archives/private\n",
+                $sync->{port}, $sync->{user}, $sync->{host}, $path
+            ;
+            $cmds .= sprintf "chown -R root:mailman /var/lib/mailman/archives/private/%s\n",
+                $path
+            ;
+        }
+        $self->add_to_script($cmds);
     }
 
     method _build_mail_server_id {

@@ -35,4 +35,20 @@ class P2I::DB::Mail extends P2I::PleskDB {
             @$doms
         );
     }
+
+    method get_maillists {
+        # Incorrectly returns client email and password as list owner email and password
+        my ($doms, $sql) = $self->domain_sql('WHERE d.name');
+        return map { P2I::Data::Mail::List->new($_) } $self->query_hashes(q[
+            SELECT l.name, d.name domain, c.login, c.email,
+                a.password, a.type password_type
+            FROM MailLists l
+            JOIN domains d on l.dom_id=d.id
+            JOIN clients c on d.cl_id=c.id
+            JOIN accounts a ON c.account_id=a.id
+            ] . $sql,
+            @$doms
+        );
+    }
+
 }
