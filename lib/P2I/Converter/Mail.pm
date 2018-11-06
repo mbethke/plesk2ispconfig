@@ -31,6 +31,13 @@ class P2I::Converter::Mail extends P2I::Converter {
             $self->dbg("\tConverting alias ", $alias->login, "(userID $clients{$alias->login})");
             $self->_create_alias($clients{$alias->login}, $alias);
         }
+
+        # Convert email catchalls
+        for my $catchall ($self->db->get_catchalls) {
+            $clients{$catchall->login} //= $self->get_client_id($catchall->login);
+            $self->dbg("\tConverting email catchall ", $catchall->mail_name, " (userID ", $catchall->login, ", $clients{$catchall->login})");
+            $self->_create_catchall($clients{$catchall->login}, $catchall);
+        }
     }
 
     method _create_mailbox_or_redirect(Int $client_id, $mbox) {
@@ -82,6 +89,17 @@ class P2I::Converter::Mail extends P2I::Converter {
                 destination => $alias->email,
                 type        => 'alias',
                 active      => 'y',
+            });
+    }
+
+    method _create_catchall(Int $client_id, $catchall) {
+        $self->dbg("\tCreating catchall ", $catchall->mail_name, " for ", $catchall->domain, " belonging to $client_id");
+        $self->lather('mail_catchall_add', $client_id, {
+                server_id   => $self->server_id,
+                source      => '@' . $catchall->domain,
+                destination => $catchall->mail_name,
+                type        => 'catchall',
+                active      => 'y'
             });
     }
 
