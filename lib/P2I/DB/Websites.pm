@@ -68,7 +68,7 @@ class P2I::DB::Websites extends P2I::PleskDB {
             JOIN clients c ON c.id=d.cl_id
             JOIN domains p ON p.id=d.parentDomainId
             LEFT OUTER JOIN certificates t ON t.id=h.certificate_id
-            WHERE u.id=? ],
+            WHERE h.dom_id=? ],
             $id);
     }
 
