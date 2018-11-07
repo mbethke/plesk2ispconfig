@@ -47,4 +47,14 @@ class P2I::DB::Clients extends P2I::PleskDB {
             $id
         );
     }
+
+    method read_limits(Int $id) {
+        return $self->query_hashes(q[
+            SELECT limit_name, value
+            FROM Limits l
+            JOIN clients c on c.limits_id=l.id
+            WHERE c.id=? ],
+            $id
+        );
+    }
 }
