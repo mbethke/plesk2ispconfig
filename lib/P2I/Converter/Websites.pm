@@ -82,6 +82,7 @@ class P2I::Converter::Websites extends P2I::Converter with P2I::Role::DatabaseCr
             is_subdomainwww     => 0,   # TODO how to determine? 
             subdomain           => \'www', # TODO enum('none','www','*'))
             php                 => booltoyn('php'),
+            php_fpm_use_socket  => \'y',
             ruby                => \$def->{ruby},
             redirect_type       => \'',
             redirect_path       => \'',
@@ -107,6 +108,9 @@ class P2I::Converter::Websites extends P2I::Converter with P2I::Role::DatabaseCr
             active              => \'y',
             traffic_quota_lock  => \$def->{traffic_quota_lock},
             type                => \'vhost',
+            pm                  => \'ondemand',
+            pm_process_idle_timeout => 10,
+            pm_max_requests     => 0,
         };
     }
 
