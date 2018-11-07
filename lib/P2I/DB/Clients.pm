@@ -29,9 +29,10 @@ class P2I::DB::Clients extends P2I::PleskDB {
     method read_client(Int $id) {
         return P2I::Data::Client->new(
             $self->query_hash(qq[
-                SELECT DISTINCT c.*, a.password, a.type password_type
+                SELECT DISTINCT c.*, IFNULL(s.password, a.password) AS password, IF(ISNULL(s.password), a.type, IF(LEFT(s.password, 13) ='\$AES-128-CBC\$', 'sym', 'plain')) AS password_type
                 FROM clients c
                 LEFT JOIN accounts a ON c.account_id=a.id
+                LEFT OUTER JOIN smb_users s ON c.login=s.login
                 WHERE c.id=?],
                 $id
             )
