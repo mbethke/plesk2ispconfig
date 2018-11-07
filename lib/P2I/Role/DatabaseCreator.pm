@@ -13,20 +13,21 @@ role P2I::Role::DatabaseCreator {
 
     method add_database(Int $client_id, HashRef $credentials) {
         defined $credentials->{$_} or croak "Field `$_' missing in credentials"
-            for(qw/ database user password new_database new_user/);
+            for(qw/ database user new_user_id new_database new_user/);
         my %params = (
             server_id        => $self->db_server_id,
             type             => 'mysql',     # TODO nothing else supported yet
             database_name    => $credentials->{new_database},
             database_user    => $credentials->{new_user},
-            database_password=> $credentials->{password},
+            database_user_id => $credentials->{new_user_id},
+            database_ro_user_id => '0',
             database_charset => 'UTF8',      # TODO always?
             remote_access    => 'y',
             remote_ips       => $self->config->server('db'),
             active           => 'y', 
         );
-        $self->dbg(__PACKAGE__ . "::_add_database($client_id, ".$credentials->{new_database}.
-            '/'.$credentials->{user}.')');
+        $self->dbg(__PACKAGE__ . "::_add_database($client_id, ".$params{database_name}.
+            '/'.$params{database_user}.': ' . $params{database_user_id} . ')');
         if($self->web_server_id eq $self->db_server_id) {
             # Web and DB server are on the same host, so overwrite these settings
             $params{remote_access} = 'n';
@@ -62,6 +63,19 @@ role P2I::Role::DatabaseCreator {
                 $self->add_to_script($script);
             }
         }
+    }
+
+    method add_database_user(Int $client_id, HashRef $credentials) {
+        defined $credentials->{$_} or croak "Field `$_' missing in credentials"
+            for(qw/ password new_user/);
+        my %params = (
+            server_id        => $self->db_server_id,
+            database_user    => $credentials->{new_user},
+            database_password=> $credentials->{password},
+        );
+        $self->dbg(__PACKAGE__ . "::_add_database_user($client_id, ".$params{database_user}.
+            '/'.$params{database_password}.')');
+        $self->lather('sites_database_user_add', $client_id, \%params);
     }
 
     method _build_web_server_id { return $self->get_named_server('web'); }
