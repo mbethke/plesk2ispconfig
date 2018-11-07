@@ -72,6 +72,28 @@ class P2I::DB::Websites extends P2I::PleskDB {
             $id);
     }
 
+    method get_php_standard_settings_for_id(Int $dom_id) {
+        return $self->query_hashes(q[
+            SELECT p.name, p.value
+            FROM PhpSettingsParameters p
+            JOIN dom_param o ON o.val=p.id
+            JOIN domains d ON d.id=o.dom_id
+            WHERE o.param='phpSettingsId'
+            AND d.id=? ],
+            $dom_id);
+    }
+
+    method get_php_custom_settings_for_id(Int $dom_id) {
+        return $self->query_hashes(q[
+            SELECT n.text
+            FROM PhpSettings p
+            JOIN Notes n on p.noteId=n.id
+            JOIN dom_param o ON o.val=p.id
+            JOIN domains d ON d.id=o.dom_id
+            WHERE d.id=? ],
+            $dom_id);
+    }
+
     method get_protected_dirs_for_id(Int $dom_id) {
         return $self->query_hashes(q[
             SELECT p.path, p.realm, d.name domain
