@@ -7,7 +7,7 @@ class P2I::Data::Website {
     use MooseX::Types::Moose ':all';
     use P2I::Types qw/ MysqlBool Bigint IPAddress /;
 
-    has [qw/ domain fp_adm fp_pass login home shell client_login /] =>
+    has [qw/ domain fp_adm fp_pass login home shell client_login www_root /] =>
         (is => 'ro', isa => Str, required => 1);
 
     has [qw/ traffic_bandwidth max_connection /] =>

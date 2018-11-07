@@ -16,50 +16,59 @@ class P2I::Converter::Websites extends P2I::Converter with P2I::Role::DatabaseCr
         for my $id ($db->list_website_ids) {
             $site           = P2I::Data::Website->new($db, $id);
             my $client_id   = $self->get_client_id($site->client_login);
-            my $added = $self->_create_site($client_id, $site);
-            my $parent_domain_id = $added->{parent_domain_id};
+            my $added = $self->_create_site($client_id, $site, 0, undef);
+            my $domain_id = $added->{domain_id};
 
             # Create all subdomains
             for my $subid ($db->get_subdomains_for_id($id)) {
                 $site = P2I::Data::WebSubdomain->new($db, $subid);
-                my $added = $self->_create_site($client_id, $site);
-                #print STDERR "\tAdded with documentroot: $added->{document_root}\n";
+                my $site = $self->_create_site($client_id, $site, $domain_id, $added->{document_root});
+                #$self->dbg("\tAdded with documentroot: $site->{document_root}\n");
             }
         }
     }
 
-    method _create_site(Int $client_id, $site) {
-        my $data = {};
+    method _create_site(Int $client_id, $site, Int $parent_domain_id, $docroot) {
+        my $data = { };
         $self->_map_fields($site, $data, $self->_field_map);
-        $self->dbg("\tCreating site: $data->{domain}");
-        my $newid = $self->lather('sites_web_domain_add', $client_id, $data);
+        $data->{parent_domain_id} = $parent_domain_id;
+        if ($parent_domain_id) {
+            $data->{type} = 'vhostsubdomain';
+            #$data->{subdomain} = $site->subdomain;
+            $data->{web_folder} = $site->subdomain; # "subdomains/" . $site->subdomain;
+            #$data->{domain} = $site->parent_domain;
+            $data->{system_user} = "web$parent_domain_id";
+            $data->{system_group} = "client$client_id";
+	    $data->{document_root} = $docroot; # Subdomain shares the parent domain's document root folders
+        }
+        $self->dbg("\tCreating site: $data->{domain} ($data->{type}: $parent_domain_id) for client $client_id");
+        my $newid = $self->lather($parent_domain_id ? 'sites_web_vhost_subdomain_add' : 'sites_web_domain_add', $client_id, $data);
         unless(defined $newid) {
             $self->dbg("\tSite creation failed");
             return;
         }
-        my $added = $self->lather('sites_web_domain_get' ,$newid);
+        my $added = $self->lather('sites_web_domain_get' , $parent_domain_id || $newid);
         my $sync = $self->config->plesk->{sync};
         # $added will be undef if --robust is on and there was an error
         return unless $added;
-        if($site->sub_domain) {
-            # Subdomains come from a different directory in Plesk
-            $self->add_to_script(sprintf "rsync -za --delete -e'ssh -p%d' '%s\@%s:%s/subdomains/%s/httpdocs/' '%s/web/'\n",
-                $sync->{port}, $sync->{user}, $sync->{host}, $site->home, $site->sub_domain,
-                $added->{document_root}
-            );
-        } else {
-            # This is a regular domain
-            $self->add_to_script(sprintf "rsync -za -e'ssh -p%d' '%s\@%s:%s/httpdocs/' '%s/web/'\n",
-                $sync->{port}, $sync->{user}, $sync->{host}, $site->home,
-                $added->{document_root}
-            );
+	# rsync the web folder contents, including Plesk stats, and fix ownership & permissions
+	my $dest = sprintf "%s/%s", $added->{document_root}, $parent_domain_id ? $data->{web_folder} : 'web';
+	my $cmds = sprintf "echo 'Copy web site %s'\n", $data->{domain};
+        $cmds .= sprintf "rsync -za -e'ssh -p%d' %s\@%s:%s/ %s/\n",
+            $sync->{port}, $sync->{user}, $sync->{host}, $site->www_root,
+            $dest
+        ;
+	# Fix ownership & permissions as rsync may make everything owned by root
+        $cmds .= sprintf "chown -R --reference=%s/tmp %s\n",
+            $added->{document_root}, $dest
+        ;
+        
+        unless ($parent_domain_id) {
+            $cmds .= sprintf "chmod o+rx %s/web\n", $added->{document_root};
+            # Set an environment variable pointing to the web space root for later use by the database module
+            $cmds .= sprintf qq[CLIENTPATH_%d="%s/"\n], $client_id, $dest;
         }
-        $self->add_to_script(sprintf "chown --reference='%s/tmp' '%s'\n",
-            $added->{document_root}, $added->{document_root}
-        );
-        $self->add_to_script(sprintf "chmod o+rx '%s/web'\n", $added->{document_root});
-        # This is for later use by the database module
-        $self->add_to_script(sprintf qq[CLIENTPATH_%d="%s/../"\n], $client_id, $added->{document_root});
+        $self->add_to_script($cmds);
         return $added;
     }
 
