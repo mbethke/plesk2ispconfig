@@ -76,6 +76,8 @@ class P2I::Converter::Websites extends P2I::Converter with P2I::Role::DatabaseCr
             cgi                 => booltoyn('cgi'),
             ssi                 => booltoyn('ssi'),
             suexec              => \$def->{suexec},
+            http_port           => 80,
+            https_port          => 443,
             errordocs           => 1,
             is_subdomainwww     => 0,   # TODO how to determine? 
             subdomain           => \'www', # TODO enum('none','www','*'))
