@@ -68,4 +68,9 @@ class P2I::DB::Websites extends P2I::PleskDB {
             WHERE u.id=? ],
             $id);
     }
+
+    method get_aliasdomains(Str $domain) {
+        return $self->query_flat(q[ SELECT a.name FROM domainaliases a JOIN domains d ON d.id=a.dom_id WHERE a.web='true' AND d.name=? ], $domain);
+    }
+
 }

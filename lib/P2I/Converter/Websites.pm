@@ -19,6 +19,11 @@ class P2I::Converter::Websites extends P2I::Converter with P2I::Role::DatabaseCr
             my $added = $self->_create_site($client_id, $site, 0, undef);
             my $domain_id = $added->{domain_id};
 
+            # Create any domain aliases
+            for my $ad ($db->get_aliasdomains($site->domain)) {
+                $self->_create_aliasdomain($client_id, $ad, $domain_id);
+            }
+
             # Create all subdomains
             for my $subid ($db->get_subdomains_for_id($id)) {
                 $site = P2I::Data::WebSubdomain->new($db, $subid);
@@ -158,4 +163,16 @@ class P2I::Converter::Websites extends P2I::Converter with P2I::Role::DatabaseCr
             return $q ? $q : -1;
         }
     }
+
+    method _create_aliasdomain(Int $client_id, Str $alias, Int $parent_domain_id) {
+        $self->dbg("\tCreating alias $alias for site domain $parent_domain_id, belonging to $client_id");
+        $self->lather('sites_web_aliasdomain_add', $client_id, {
+                server_id   => $self->server_id,
+                domain      => $alias,
+                parent_domain_id => $parent_domain_id,
+                type        => 'alias',
+                active      => 'y',
+            });
+    }
+
 }
