@@ -58,6 +58,22 @@ class P2I::Converter::Websites extends P2I::Converter with P2I::Role::DatabaseCr
             $sync->{port}, $sync->{user}, $sync->{host}, $site->www_root,
             $dest
         ;
+        unless ($parent_domain_id) {
+	    # Now copy the cgi-bin, private and logs folders - ignore for subdomains as it's not clear where to put them
+            $cmds .= sprintf "rsync -za -e'ssh -p%d' %s\@%s:%s/cgi-bin/ %s/%s/\n",
+                $sync->{port}, $sync->{user}, $sync->{host}, $site->home,
+                $added->{document_root}, 'cgi-bin'
+            ;
+            $cmds .= sprintf "rsync -za -e'ssh -p%d' %s\@%s:%s/private/ %s/%s/\n",
+                $sync->{port}, $sync->{user}, $sync->{host}, $site->home,
+                $added->{document_root}, 'private'
+            ;
+	}
+	my $logdir = $parent_domain_id ? 'log/logs' : 'log/' . $data->{web_folder};
+        $cmds .= sprintf "rsync -za -e'ssh -p%d' %s\@%s:%s/statistics/logs/ %s/%s/\n",
+            $sync->{port}, $sync->{user}, $sync->{host}, $site->home,
+            $added->{document_root}, $logdir
+        ;
 	# Fix ownership & permissions as rsync may make everything owned by root
         $cmds .= sprintf "chown -R --reference=%s/tmp %s\n",
             $added->{document_root}, $dest
