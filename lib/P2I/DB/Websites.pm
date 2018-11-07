@@ -69,6 +69,25 @@ class P2I::DB::Websites extends P2I::PleskDB {
             $id);
     }
 
+    method get_protected_dirs_for_id(Int $dom_id) {
+        return $self->query_hashes(q[
+            SELECT p.path, p.realm, d.name domain
+            FROM protected_dirs p
+            JOIN domains d ON p.dom_id=d.id
+            WHERE d.id=? ],
+            $dom_id);
+    }
+
+    method get_protected_dir_users_for_id(Int $dom_id, Str $path) {
+        return $self->query_hashes(q[
+            SELECT u.login, p.realm, d.name domain
+            FROM pd_users u
+            JOIN protected_dirs p ON p.id=u.pd_id
+            JOIN domains d ON p.dom_id=d.id
+            WHERE d.id=? AND p.path=?],
+            $dom_id, $path);
+    }
+
     method get_aliasdomains(Str $domain) {
         return $self->query_flat(q[ SELECT a.name FROM domainaliases a JOIN domains d ON d.id=a.dom_id WHERE a.web='true' AND d.name=? ], $domain);
     }

@@ -30,6 +30,18 @@ class P2I::Converter::Websites extends P2I::Converter with P2I::Role::DatabaseCr
                 my $site = $self->_create_site($client_id, $site, $domain_id, $added->{document_root});
                 #$self->dbg("\tAdded with documentroot: $site->{document_root}\n");
             }
+
+            # Create any protected directories
+            for my $pd ($db->get_protected_dirs_for_id($id)) {
+                my $dir_id = $self->_create_protected_folder($client_id, $domain_id, $pd->{path});
+
+                for my $pdu ($db->get_protected_dir_users_for_id($id, $pd->{path})) {
+                    my $password = Crypt::RandPasswd->word(8, 12);
+                    $self->dbg("\tAdding user '$pdu->{login}' with password '$password' for folder $pd->{path} for domain ID $domain_id, client $client_id");
+
+                    $self->_create_protected_folder_user($client_id, $domain_id, $pdu->{login}, $password);
+                }
+            }
         }
     }
 
@@ -175,4 +187,24 @@ class P2I::Converter::Websites extends P2I::Converter with P2I::Role::DatabaseCr
             });
     }
 
+    method _create_protected_folder(Int $client_id, Int $parent_domain_id, Str $path) {
+        $self->dbg("\tCreating protected folder '$path' for site domain $parent_domain_id, belonging to $client_id");
+        $self->lather('sites_web_folder_add', $client_id, {
+                server_id   => $self->web_server_id,
+                parent_domain_id => $parent_domain_id,
+                path        => $path,
+                active      => 'y',
+            });
+    }
+
+    method _create_protected_folder_user(Int $client_id, Int $folder_id, Str $username, Str $password) {
+        $self->dbg("\tCreating protected folder user '$username' with password '$password' for folder $folder_id, belonging to $client_id");
+        $self->lather('sites_web_folder_user_add', $client_id, {
+                server_id   => $self->web_server_id,
+                web_folder_id => $folder_id,
+                username    => $username,
+                password    => $password,
+                active      => 'y',
+            });
+    }
 }
