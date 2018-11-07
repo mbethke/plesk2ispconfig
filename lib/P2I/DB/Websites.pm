@@ -22,6 +22,7 @@ class P2I::DB::Websites extends P2I::PleskDB {
                 s.login, s.home, s.shell, s.quota,
                 a.type password_type, a.password,
                 i.ip_address,
+                t.csr ssl_csr, t.pvt_key ssl_key, t.cert ssl_cert, t.ca_cert ssl_cacert,
                 c.login client_login,
                 NULL parent_domain
             FROM hosting h
@@ -30,6 +31,7 @@ class P2I::DB::Websites extends P2I::PleskDB {
             JOIN accounts a ON a.id=s.account_id
             JOIN IP_Addresses i ON i.id=h.ip_address_id
             JOIN clients c ON c.id=d.cl_id
+            LEFT OUTER JOIN certificates t ON t.id=h.certificate_id
             WHERE h.dom_id=? ],
             $id
         );
@@ -53,6 +55,7 @@ class P2I::DB::Websites extends P2I::PleskDB {
                 s.login, s.home, s.shell, s.quota,
                 a.type password_type, a.password,
                 i.ip_address,
+                t.csr ssl_csr, t.pvt_key ssl_key, t.cert ssl_cert, t.ca_cert ssl_cacert,
                 c.login client_login
             FROM subdomains u
             JOIN domains d ON d.id=u.dom_id
@@ -61,6 +64,7 @@ class P2I::DB::Websites extends P2I::PleskDB {
             JOIN accounts a ON a.id=s.account_id
             JOIN IP_Addresses i ON i.id=h.ip_address_id
             JOIN clients c ON c.id=d.cl_id
+            LEFT OUTER JOIN certificates t ON t.id=h.certificate_id
             WHERE u.id=? ],
             $id);
     }

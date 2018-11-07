@@ -93,9 +93,10 @@ class P2I::Converter::Websites extends P2I::Converter with P2I::Role::DatabaseCr
             ssl_organisation_unit => \'',
             ssl_country         => \'',
             ssl_domain          => \'',
-            ssl_request         => \'',
-            ssl_cert            => \'',
-            ssl_bundle          => \'',
+            ssl_request         => 'ssl_csr',
+            ssl_cert            => 'ssl_cert',
+            ssl_key             => 'ssl_key',
+            ssl_bundle          => 'ssl_cacert',
             ssl_action          => \'',
             stats_password      => \'', # TODO auto-generate and mail to client?
             stats_type          => \$def->{stats_type},
