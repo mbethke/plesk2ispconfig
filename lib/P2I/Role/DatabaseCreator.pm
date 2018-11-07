@@ -59,7 +59,7 @@ role P2I::Role::DatabaseCreator {
                     PASSWORD => $credentials->{password},
                 );
                 # Process the above expandos
-                $script =~ s/\${$_}/$replace{$_}/ for keys %replace;
+                $script =~ s/\${$_}/$replace{$_}/g for keys %replace;
                 $self->add_to_script($script);
             }
         }
