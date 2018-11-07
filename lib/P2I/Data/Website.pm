@@ -13,7 +13,7 @@ class P2I::Data::Website {
     has [qw/ traffic_bandwidth max_connection /] =>
         (is => 'ro', isa => Int, required => 1);
 
-    has [qw/ fp fp_ssl fp_enable ssi php php_safe_mode cgi perl python fastcgi
+    has [qw/ fp fp_ssl fp_enable ssi php cgi perl python fastcgi
             miva coldfusion asp asp_dot_net ssl same_ssl /] =>
         (is => 'ro', isa => MysqlBool, coerce => 1, required => 1);
 

@@ -14,7 +14,7 @@ class P2I::DB::Websites extends P2I::PleskDB {
     method get_website(Int $id) {
         return $self->query_hash(q[
             SELECT h.real_traffic, h.fp, h.fp_ssl, h.fp_enable, h.fp_adm,
-                h.fp_pass, h.ssi, h.php, h.php_safe_mode, h.cgi, h.perl,
+                h.fp_pass, h.ssi, h.php, h.cgi, h.perl,
                 h.python, h.fastcgi, h.miva, h.coldfusion, h.asp, h.asp_dot_net,
                 h.ssl, h.webstat, h.same_ssl, h.traffic_bandwidth,
                 h.max_connection, h.php_handler_type,
@@ -42,7 +42,7 @@ class P2I::DB::Websites extends P2I::PleskDB {
 
     method get_subdomain(Int $id) {
         return $self->query_hash(q[
-           SELECT u.ssi, u.php, h.php_safe_mode, u.cgi, u.perl, u.python,
+           SELECT u.ssi, u.php, u.cgi, u.perl, u.python,
                 u.fastcgi, u.miva, u.coldfusion, u.asp, u.asp_dot_net,
                 u.ssl, u.same_ssl, u.name subdomain,
                 h.real_traffic, h.fp, h.fp_ssl, h.fp_enable, h.fp_adm,
