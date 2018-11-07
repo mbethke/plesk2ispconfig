@@ -20,11 +20,11 @@ class P2I::Data::Website {
     has [qw/ real_traffic quota /] =>
         (is => 'ro', isa => Bigint, required => 1);
 
-    has sub_domain       => (is => 'ro', isa => 'Str');
     has parent_domain    => (is => 'ro', isa => 'Maybe[Str]',                         required => 1);
     has htype            => (is => 'ro', isa => enum([qw/ vrt_hst std_fwd none /]),   required => 1);
     has webstat          => (is => 'ro', isa => enum([qw/ none webalizer awstats /]), required => 1);
     has php_handler_type => (is => 'ro', isa => enum([qw/ cgi fastcgi module /]),     required => 1);
+    has php_type         => (is => 'ro', isa => enum([qw/ cgi fast-cgi mod php-fpm none /]),     required => 1);
     has ip_address       => (is => 'ro', isa => IPAddress,                            required => 1);
     has [qw/ ssl_csr ssl_key ssl_cert ssl_cacert /] => (is => 'ro', isa => 'Maybe[Str]', required => 1);
 

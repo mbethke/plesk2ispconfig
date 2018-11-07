@@ -60,8 +60,7 @@ class P2I::DB::Websites extends P2I::PleskDB {
                 c.login client_login,
                 p.name parent_domain
             FROM hosting h
-            JOIN domains d ON d.id=u.dom_id
-            JOIN hosting h ON h.dom_id=u.dom_id
+            JOIN domains d ON d.id=h.dom_id
             JOIN sys_users s ON s.id=h.sys_user_id
             JOIN accounts a ON a.id=s.account_id
             JOIN IP_Addresses i ON i.id=IF(h.ip_address_id = 0, (select val from misc where param='def_ip_id'), h.ip_address_id)
