@@ -29,7 +29,7 @@ class P2I::DB::Websites extends P2I::PleskDB {
             JOIN domains d ON d.id=h.dom_id
             JOIN sys_users s ON s.id=h.sys_user_id
             JOIN accounts a ON a.id=s.account_id
-            JOIN IP_Addresses i ON i.id=h.ip_address_id
+            JOIN IP_Addresses i ON i.id=IF(h.ip_address_id = 0, (select val from misc where param='def_ip_id'), h.ip_address_id)
             JOIN clients c ON c.id=d.cl_id
             LEFT OUTER JOIN certificates t ON t.id=h.certificate_id
             WHERE h.dom_id=? ],
@@ -62,7 +62,7 @@ class P2I::DB::Websites extends P2I::PleskDB {
             JOIN hosting h ON h.dom_id=u.dom_id
             JOIN sys_users s ON s.id=h.sys_user_id
             JOIN accounts a ON a.id=s.account_id
-            JOIN IP_Addresses i ON i.id=h.ip_address_id
+            JOIN IP_Addresses i ON i.id=IF(h.ip_address_id = 0, (select val from misc where param='def_ip_id'), h.ip_address_id)
             JOIN clients c ON c.id=d.cl_id
             LEFT OUTER JOIN certificates t ON t.id=h.certificate_id
             WHERE u.id=? ],
