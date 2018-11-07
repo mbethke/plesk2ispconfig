@@ -99,7 +99,7 @@ class P2I::Converter::Clients extends P2I::Converter {
             usertheme               => undef,
             template_master         => 0,
             template_additional     => undef,
-            created_at              => 0,
+            created_at              => sub { my $self=shift; my $d = $self->cr_date; $d =~ s/-//g; $d },
         };
     }
 }
