@@ -93,10 +93,19 @@ then
     echo >&2 "WARNING: cannot change database settings for %{OLD_DB}"
     echo >&2 "due to missing client path. Run the Websites module before."
 else
+    # Drupal
     find "$CLIENTPATH_%{CLIENTID}" -type f -name settings.php | grep "sites/default/settings.php" | while read f
     do
         echo >&2 "Editing user and database settings in Drupal config '$f', backup in $f.bak"
         # $db_url = 'mysqli://user:pass@host/database';
         sed -i.bak -e's!://${OLD_USER}:${PASSWORD}@[^/]\+/${OLD_DB}!://${NEW_USER}:${PASSWORD}@[^/]\+/${NEW_DB}!' "$f"
+    done
+    # WordPress
+    find "$CLIENTPATH_%{CLIENTID}" -type f -name wp-config.php | while read f
+    do
+        echo >&2 "Editing user and database settings in WordPress config '$f', backup in $f.bak"
+        # Database details in separate defines...
+        sed -i.bak -e's!define('"'"'DB_NAME'"'"', '"'"'%{OLD_DB}'"'"'!define('"'"'DB_NAME'"'"', '"'"'%{NEW_DB}'"'"'!' "$f"
+        sed -i.bak -e's!define('"'"'DB_USER'"'"', '"'"'%{OLD_USER}'"'"'!define('"'"'DB_USER'"'"', '"'"'%{NEW_USER}'"'"'!' "$f"
     done
 fi
