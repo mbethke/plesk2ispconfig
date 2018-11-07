@@ -95,7 +95,7 @@ class P2I::Converter::Clients extends P2I::Converter {
             parent_client_id        => undef,
             username                => 'login',
             password                => 'password',
-            language                => 'locale',
+            language                => sub { my $self=shift; return $self->locale || 'en'; },
             usertheme               => undef,
             template_master         => 0,
             template_additional     => undef,
