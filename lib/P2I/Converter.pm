@@ -68,7 +68,12 @@ class P2I::Converter with P2I::Role::Debug {
 
     # Add a bit of text to a script that should be executed later.
     method add_to_script(Str $chunk) {
-        $self->add_to_file($self->config->postscript, $chunk);
+        # Prepend the shebang if this is the first append - the script does not yet exist
+        my $file = $self->config->postscript;
+        if(! -e $file) {
+            $chunk = "#/bin/sh\n\n$chunk";
+        }
+        $self->add_to_file($file, $chunk);
     }
 
     method _map_fields($src, $dst, $map) {
