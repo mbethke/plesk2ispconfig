@@ -178,9 +178,11 @@ REQUIREMENTS
         MooseX::Types::DateTime::ButMaintained
 	MooseX::Getopt
         List::MoreUtils
+	LWP::Protocol::https
         Method::Signatures::Modifiers
         DateTime::Format::MySQL
         Data::Dumper
+	DBD::MySQL
         DBIx::Simple
         Digest::MD5
         Scalar::Util
