@@ -94,15 +94,15 @@ class P2I::Converter::Clients extends P2I::Converter {
             limit_cron_type         => \(DEFAULT_LIMIT_CRON_TYPE),
             limit_cron_frequency    => 5,
             limit_traffic_quota     => -1,
-            limit_client            => 0,
+            limit_client            => sub { my $self=shift; return $self->type eq 'reseller' ? -1 : 0}, # reseller if non-zero
             parent_client_id        => undef,
             username                => 'login',
             password                => 'password',
-            language                => 'locale',
+            language                => sub { my $self=shift; return $self->locale || 'en'; },
             usertheme               => undef,
             template_master         => 0,
             template_additional     => undef,
-            created_at              => 0,
+            created_at              => sub { my $self=shift; my $d = $self->cr_date; $d =~ s/-//g; $d },
         };
     }
 }

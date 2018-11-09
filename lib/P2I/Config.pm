@@ -22,8 +22,8 @@ class P2I::Config {
     }
 
     method defaults(Str $type) {
-        croak("type arg must be `mail' or `web'")
-            unless $type ~~ [qw/ mail web /];
+        croak("type arg must be `mail', `users' or `web'")
+            unless $type ~~ [qw/ mail web users /];
         return $self->_data->{defaults}{$type};
     }
 
@@ -60,6 +60,10 @@ class P2I::Config {
                     allow_override      => 1,
                     ip_map              => {},
                     stats_type          => 1,
+                },
+                users => {
+                    userdir    => 1,
+                    webuserdir => 1,
                 },
             },
             plesk => {

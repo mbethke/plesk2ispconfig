@@ -30,12 +30,18 @@ class P2I::Converter::Databases extends P2I::Converter with P2I::Role::DatabaseC
                 # about illegal characters
                 s/-/_/g for($db_new_name, $db_new_user);
 
+                my $dbu_id = $self->add_database_user($client_id, {
+                        new_user        => $db_new_user,
+                        password        => $db->password,
+                    }
+                );
                 $self->add_database($client_id, {
                         database        => $db_name,
                         user            => $db_user,
                         password        => $db->password,
                         new_database    => $db_new_name,
                         new_user        => $db_new_user,
+                        new_user_id     => $dbu_id,
                     }
                 );
             } catch {
