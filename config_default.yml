@@ -13,6 +13,9 @@ defaults:
     suexec: y
     traffic_quota_lock: n
     stats_type: webalizer
+  users:
+    userdir: /var/www/clients/client%c/web%a
+    webuserdir: /var/www/clients/client%c/%a/web_user/%a
 server:
   mail: 1.2.3.4
   web: 1.2.3.4

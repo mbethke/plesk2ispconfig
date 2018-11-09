@@ -67,7 +67,7 @@ class P2I::Converter::Mail extends P2I::Converter {
         $self->lather('mail_forward_add', $client_id, {
                 server_id   => $self->server_id,
                 source      => $mbox->email,
-                destination => $mbox->redir_addr,
+                destination => join(' ', $mbox->redir_addr, $self->db->get_redirs($mbox->mail_name, $mbox->domain)),
                 type        => 'forward',
                 active      => 'y'
             });
@@ -134,12 +134,12 @@ class P2I::Converter::Mail extends P2I::Converter {
             gid                     => \$def->{gid},
             maildir                 => sub { $self->_create_maildir(shift, $def) },
             quota                   => sub { my $q=shift->quota; -1==$q ? 0 : $q },
-            cc                      => sub { my $self=shift; $self->redirect ? $self->redir_addr : ''},
+            cc                      => sub { my $self=shift; $self->redirect ? join(' ', $self->redir_addr, $self->db->get_redirs($self->mail_name, $self->domain)) : ''},
             homedir                 => \$def->{homedir},
-            autoresponder           => \'n',
+            autoresponder           => sub { my $self = shift; $self->autoresponder ? 'y' : 'n' },
             autoresponder_start_date=> '',
             autoresponder_end_date  => '',
-            autoresponder_text      => '',
+            autoresponder_text      => 'response',
             move_junk               => \'y',
             custom_mailfilter       => '',
             postfix                 => \'y',
@@ -190,12 +190,14 @@ EOF
         my $oli_repo = <<EOF;
 [Repository %s]
 type = IMAP
+readonly = %s
 ssl = %s
 maxconnections = 10
 remoteport = %d
 remotehost = %s
 remoteuser = %s
 remotepass = %s
+nametrans: %s
 
 EOF
 
@@ -220,9 +222,9 @@ EOF
             
             my $section = sprintf($oli_acct, ($acct) x 3);
             $section .=   sprintf($oli_repo,
-                    "${acct}_Old", @sslparams, $host, $login, $d->{password});
+                    "${acct}_Old", 'True', @sslparams, $host, $login, $d->{password}, "lambda folder: 'Junk' if folder == 'INBOX.Spam' else re.sub(r'^INBOX.', r'', folder)");
             $section .=   sprintf($oli_repo,
-                    "${acct}_New", @sslparams, $self->config->server('mail'), $login, $d->{password});
+                    "${acct}_New", 'False', @sslparams, $self->config->server('mail'), $login, $d->{password}, "lambda folder: 'INBOX.Spam' if folder == 'Junk' else 'INBOX' if folder == 'INBOX' else 'INBOX.' + folder");
             $self->add_to_file($file, $section);
         }
     }

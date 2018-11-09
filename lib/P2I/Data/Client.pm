@@ -39,7 +39,7 @@ class P2I::Data::Client with P2I::Role::Password {
 # allow_ftp_backups allow_local_backups change_limits cp_access create_domains
 # manage_anonftp manage_crontab manage_dashboard manage_dns manage_domain_aliases
 # manage_ftp_password manage_log manage_maillists manage_not_chroot_shell
-# manage_performance manage_phosting manage_php_safe_mode manage_quota
+# manage_performance manage_phosting manage_quota
 # manage_sh_access manage_spamfilter manage_subdomains manage_virusfilter
 # manage_webapps manage_webstat remote_access_interface select_db_server
 # site_builder

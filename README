@@ -51,6 +51,9 @@ defaults:
     suexec: y
     traffic_quota_lock: n
     stats_type: webalizer
+  users:
+    userdir: /var/www/clients/client%c/web%a
+    webuserdir: /var/www/clients/client%c/%a/web_user/%a
 server:
   mail: 1.2.3.4
   web: 1.2.3.4
@@ -137,6 +140,8 @@ databases: These settings control the migration of databases.
            in ISPconfig will fail. Then the only solution is to create a new
            database in ISPconfig, dump the old one and restore it into the new
            one before DROPping it.
+users: Patterns for the user's folder on the ISPConfig system.  %a is replaced
+       by the account name and %c by the client ID.
            
 BUGS AND LIMITATONS
 
@@ -178,9 +183,11 @@ REQUIREMENTS
         MooseX::Types::DateTime::ButMaintained
 	MooseX::Getopt
         List::MoreUtils
+	LWP::Protocol::https
         Method::Signatures::Modifiers
         DateTime::Format::MySQL
         Data::Dumper
+	DBD::MySQL
         DBIx::Simple
         Digest::MD5
         Scalar::Util
