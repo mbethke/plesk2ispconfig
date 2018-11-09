@@ -5,11 +5,14 @@ use Method::Signatures::Modifiers;
 class P2I::Converter::Databases extends P2I::Converter with P2I::Role::DatabaseCreator {
     use MooseX::Types::Moose ':all';
     use P2I::ISPconfigSOAP;
+    use P2I::Data::Database;
     use Try::Tiny;
 
     method convert {
         $self->dbg(__PACKAGE__ . '::convert');
-        
+
+        P2I::Data::Database->cipher($self->config->cipher);
+
         for my $db ($self->db->get_databases) {
             try {
                 my $client_id = $self->get_client_id($db->client_login);

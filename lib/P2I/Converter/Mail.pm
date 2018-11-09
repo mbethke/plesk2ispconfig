@@ -6,6 +6,7 @@ class P2I::Converter::Mail extends P2I::Converter {
     use MooseX::Types::Moose ':all';
     use P2I::Types qw/ IPAddress /;
     use Moose::Util::TypeConstraints;
+    use P2I::Data::Mail::Box;
     use Data::Dumper;
 
     has domains     => (is => 'ro', isa => HashRef, default => sub { {} });
@@ -17,7 +18,9 @@ class P2I::Converter::Mail extends P2I::Converter {
         my %clients;
 
         $self->dbg(__PACKAGE__ . '::convert');
-        
+
+        P2I::Data::Mail::Box->cipher($self->config->cipher);
+
         # Convert local mailboxes and forwards
         for my $mbox ($self->db->get_mailboxes) {
             $clients{$mbox->login} //= $self->lather('client_get_by_username', $mbox->login)->{userid};
