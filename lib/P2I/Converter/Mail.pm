@@ -60,7 +60,7 @@ class P2I::Converter::Mail extends P2I::Converter {
         $self->lather('mail_forward_add', $client_id, {
                 server_id   => $self->server_id,
                 source      => $mbox->email,
-                destination => $mbox->redir_addr,
+                destination => join(' ', $mbox->redir_addr, $self->db->get_redirs($mbox->mail_name, $mbox->domain)),
                 type        => 'forward',
                 active      => 'y'
             });
@@ -101,7 +101,7 @@ class P2I::Converter::Mail extends P2I::Converter {
             gid                     => \$def->{gid},
             maildir                 => sub { $self->_create_maildir(shift, $def) },
             quota                   => sub { my $q=shift->quota; -1==$q ? 0 : $q },
-            cc                      => sub { my $self=shift; $self->redirect ? $self->redir_addr : ''},
+            cc                      => sub { my $self=shift; $self->redirect ? join(' ', $self->redir_addr, $self->db->get_redirs($self->mail_name, $self->domain)) : ''},
             homedir                 => \$def->{homedir},
             autoresponder           => \'n',
             autoresponder_start_date=> '',

@@ -35,4 +35,8 @@ class P2I::DB::Mail extends P2I::PleskDB {
             @$doms
         );
     }
+
+    method get_redirs (Str $mail_name, Str $domain) {
+        return $self->query_flat(q[ SELECT r.address FROM mail_redir r JOIN mail m ON r.mn_id=m.id JOIN domains d ON m.dom_id=d.id WHERE m.mail_name=? AND d.name=? ], $mail_name, $domain);
+    }
 }
