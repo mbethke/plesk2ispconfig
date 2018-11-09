@@ -71,7 +71,7 @@ class P2I::Converter with P2I::Role::Debug {
         # Prepend the shebang if this is the first append - the script does not yet exist
         my $file = $self->config->postscript;
         if(! -e $file) {
-            $chunk = "#/bin/sh\n\n$chunk";
+            $chunk = "#!/bin/sh\n\n$chunk";
         }
         $self->add_to_file($file, $chunk);
     }
