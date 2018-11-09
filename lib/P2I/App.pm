@@ -8,7 +8,7 @@ class P2I::App with MooseX::Getopt {
     use P2I::Config;
 
     has config      => (is => 'rw', isa => Str, default => 'config.yml');
-    has modules     => (is => 'rw', isa => Str, default => 'Clients,Domains,Mail,Websites,Databases,Users');
+    has modules     => (is => 'rw', isa => Str, default => 'Clients,Domains,Mail,Websites,Databases,Postfix');
     has domains     => (is => 'rw', isa => Str);
     has listmodules => (is => 'rw', isa => Bool, default => 0);
     has debug       => (is => 'rw', isa => Bool, default => 0);
