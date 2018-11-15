@@ -50,6 +50,10 @@ class P2I::Converter::Mail extends P2I::Converter {
         unless(exists $doms->{$mdomain}) {
             $self->_create_domain($client_id, $mdomain);
             $doms->{$mdomain} = 1;
+            for my $ad ($self->db->get_aliasdomains($mdomain)) {
+                $self->_create_aliasdomain(Int $client_id, $ad, $mdomain);
+                $doms->{$ad} = 1;
+            }
         }
 
         # Check whether is'a local mailbox or a forward
@@ -94,6 +98,16 @@ class P2I::Converter::Mail extends P2I::Converter {
                 active      => 'y',
             });
     }
+
+    method _create_aliasdomain(Int $client_id, Str $alias, Str $domain) {
+        $self->dbg("\tCreating alias $alias for mail domain $domain, belonging to $client_id");
+        $self->lather('mail_aliasdomain_add', $client_id, {  # Might be mail_alias_add, but different type
+                server_id   => $self->server_id,
+                source      => $alias,
+                destination => $domain,
+                type        => 'aliasdomain',
+                active      => 'y',
+            });
 
     method _create_list(Int $client_id, $list) {
         $self->dbg("\tCreating email list ", $list->name, " for ", $list->domain, " belonging to $client_id");
