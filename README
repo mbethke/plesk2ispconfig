@@ -51,6 +51,9 @@ defaults:
     suexec: y
     traffic_quota_lock: n
     stats_type: webalizer
+  users:
+    userdir: /var/www/clients/client%c/web%a
+    webuserdir: /var/www/clients/client%c/%a/web_user/%a
 server:
   mail: 1.2.3.4
   web: 1.2.3.4
@@ -61,6 +64,7 @@ plesk:
   port: 3306
   user: pleskuser
   pass: pleskpass
+  key: secret_key_file
   sync:
     host: 127.0.0.1
     user: root
@@ -137,6 +141,12 @@ databases: These settings control the migration of databases.
            in ISPconfig will fail. Then the only solution is to create a new
            database in ISPconfig, dump the old one and restore it into the new
            one before DROPping it.
+
+key: The location of the server-specific secret key file on the Plesk system,
+     usually /etc/psa/private/secret_key
+
+users: Patterns for the user's folder on the ISPConfig system.  %a is replaced
+       by the account name and %c by the client ID.
            
 BUGS AND LIMITATONS
 
@@ -173,16 +183,21 @@ REQUIREMENTS
 	local::lib
         Modern::Perl
         Moose
+        MooseX::ClassAttribute
         MooseX::Declare
         MooseX::Types
         MooseX::Types::DateTime::ButMaintained
 	MooseX::Getopt
         List::MoreUtils
+	LWP::Protocol::https
         Method::Signatures::Modifiers
+        Crypt::Rijndael
         DateTime::Format::MySQL
         Data::Dumper
+	DBD::MySQL
         DBIx::Simple
         Digest::MD5
+        MIME::Base64
         Scalar::Util
         SOAP::Lite
         YAML
