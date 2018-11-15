@@ -13,6 +13,7 @@ class P2I::Config {
     has do_domains  => (is => 'rw', isa => ArrayRef);
     has robust      => (is => 'rw', isa => Bool);
     has debug       => (is => 'rw', isa => Bool);
+    has cipher      => (is => 'rw', isa => 'Crypt::Rijndael');
 
     method server(Str $type) {
         croak("type arg must be `mail', `db' or `web'")
@@ -21,8 +22,8 @@ class P2I::Config {
     }
 
     method defaults(Str $type) {
-        croak("type arg must be `mail' or `web'")
-            unless $type ~~ [qw/ mail web /];
+        croak("type arg must be `mail', `users' or `web'")
+            unless $type ~~ [qw/ mail web users /];
         return $self->_data->{defaults}{$type};
     }
 
@@ -60,6 +61,10 @@ class P2I::Config {
                     ip_map              => {},
                     stats_type          => 1,
                 },
+                users => {
+                    userdir    => 1,
+                    webuserdir => 1,
+                },
             },
             plesk => {
                 db   => 1,
@@ -67,6 +72,7 @@ class P2I::Config {
                 port => 1,
                 user => 1,
                 pass => 1,
+                key  => 1,
                 sync => {
                     user => 1,
                     host => 1,
