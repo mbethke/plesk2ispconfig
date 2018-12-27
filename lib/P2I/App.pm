@@ -9,6 +9,7 @@ class P2I::App with MooseX::Getopt {
 
     has config      => (is => 'rw', isa => Str, default => 'config.yml');
     has modules     => (is => 'rw', isa => Str, default => 'Clients,Domains,Mail,Websites,Databases,DNS');
+    has modules     => (is => 'rw', isa => Str, default => 'Clients,Domains,Mail,Websites,Databases,Postfix,Spamfilter,DNS');
     has domains     => (is => 'rw', isa => Str);
     has listmodules => (is => 'rw', isa => Bool, default => 0);
     has debug       => (is => 'rw', isa => Bool, default => 0);
@@ -34,6 +35,7 @@ class P2I::App with MooseX::Getopt {
         builder => '_build_soap',
         reader  => 'soap'
     );
+    has cipher     => (is => 'ro', isa => 'Crypt::Rijndael', lazy => 1, builder => '_build_cipher');
 
     method run {
         # Just list the default plus the Listdomains module and exit
@@ -57,7 +59,7 @@ EOUSE
         if(my $domains = $self->domains) {
             $self->cfg->do_domains([ split /,/, $domains ]);
         }
-        $self->cfg->$_($self->$_) for qw/ robust debug /;
+        $self->cfg->$_($self->$_) for qw/ robust debug cipher /;
 
         # Remove scripts from previous runs
         unlink $self->cfg->postscript;
@@ -94,5 +96,22 @@ EOUSE
     method _build_soap {
         my $cfg = $self->cfg->ispconfig;
         return P2I::ISPconfigSOAP->new( map { $_ => $cfg->{$_} } qw/ user pass proxy uri /);
+    }
+
+    method _build_cipher {
+        # Read the secret key once and create a Crypt::Rijndael instance to decrypt passwords
+        my $cfg = $self->cfg->plesk;
+        my $sync = $self->cfg->plesk->{sync};
+        my $key = join('', $self->get_remote_file_contents($sync->{user}, $sync->{host}, $cfg->{key}));
+        return Crypt::Rijndael->new( $key, Crypt::Rijndael::MODE_CBC() );
+    }
+
+    method get_remote_file_contents($ssh_user, $remote_host, $remote_filename) {
+        my $infile;
+
+        my $cmd = "ssh -l $ssh_user $remote_host cat $remote_filename |";
+
+        open $infile, $cmd or die "Couldn't spawn '$cmd': $!/$?";
+        <$infile>; # Return array of lines from remote file
     }
 }

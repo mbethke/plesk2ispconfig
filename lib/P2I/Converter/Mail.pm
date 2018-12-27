@@ -6,6 +6,7 @@ class P2I::Converter::Mail extends P2I::Converter {
     use MooseX::Types::Moose ':all';
     use P2I::Types qw/ IPAddress /;
     use Moose::Util::TypeConstraints;
+    use P2I::Data::Mail::Box;
     use Data::Dumper;
 
     has domains     => (is => 'ro', isa => HashRef, default => sub { {} });
@@ -17,7 +18,9 @@ class P2I::Converter::Mail extends P2I::Converter {
         my %clients;
 
         $self->dbg(__PACKAGE__ . '::convert');
-        
+
+        P2I::Data::Mail::Box->cipher($self->config->cipher);
+
         # Convert local mailboxes and forwards
         for my $mbox ($self->db->get_mailboxes) {
             $clients{$mbox->login} //= $self->lather('client_get_by_username', $mbox->login)->{userid};
@@ -31,6 +34,13 @@ class P2I::Converter::Mail extends P2I::Converter {
             $self->dbg("\tConverting alias ", $alias->login, "(userID $clients{$alias->login})");
             $self->_create_alias($clients{$alias->login}, $alias);
         }
+
+        # Convert email lists
+        for my $list ($self->db->get_maillists) {
+            $clients{$list->login} //= $self->get_client_id($list->login);
+            $self->dbg("\tConverting list ", $list->name, " (userID ", $list->login, ", $clients{$list->login})");
+            $self->_create_list($clients{$list->login}, $list);
+        }
     }
 
     method _create_mailbox_or_redirect(Int $client_id, $mbox) {
@@ -40,6 +50,10 @@ class P2I::Converter::Mail extends P2I::Converter {
         unless(exists $doms->{$mdomain}) {
             $self->_create_domain($client_id, $mdomain);
             $doms->{$mdomain} = 1;
+            for my $ad ($self->db->get_aliasdomains($mdomain)) {
+                $self->_create_aliasdomain(Int $client_id, $ad, $mdomain);
+                $doms->{$ad} = 1;
+            }
         }
 
         # Check whether is'a local mailbox or a forward
@@ -60,7 +74,7 @@ class P2I::Converter::Mail extends P2I::Converter {
         $self->lather('mail_forward_add', $client_id, {
                 server_id   => $self->server_id,
                 source      => $mbox->email,
-                destination => $mbox->redir_addr,
+                destination => join(' ', $mbox->redir_addr, $self->db->get_redirs($mbox->mail_name, $mbox->domain)),
                 type        => 'forward',
                 active      => 'y'
             });
@@ -85,6 +99,42 @@ class P2I::Converter::Mail extends P2I::Converter {
             });
     }
 
+    method _create_aliasdomain(Int $client_id, Str $alias, Str $domain) {
+        $self->dbg("\tCreating alias $alias for mail domain $domain, belonging to $client_id");
+        $self->lather('mail_aliasdomain_add', $client_id, {  # Might be mail_alias_add, but different type
+                server_id   => $self->server_id,
+                source      => $alias,
+                destination => $domain,
+                type        => 'aliasdomain',
+                active      => 'y',
+            });
+
+    method _create_list(Int $client_id, $list) {
+        $self->dbg("\tCreating email list ", $list->name, " for ", $list->domain, " belonging to $client_id");
+        $self->lather('mail_mailinglist_add', $client_id, {
+                server_id   => $self->server_id,
+                domain      => $list->domain,
+                email       => $list->email, # !!!TBD!!!
+                password    => $list->password, # !!!TBD!!!
+                listname    => $list->name,
+            });
+        my $sync = $self->config->plesk->{sync};
+        # Copy the list data
+        my $cmds = sprintf "echo 'Copy mailing list'\nrsync -za -e'ssh -p%d' %s\@%s:/var/lib/mailman/lists/%s /var/lib/mailman/lists\n",
+            $sync->{port}, $sync->{user}, $sync->{host}, $list->name
+        ;
+        # Copy the list archive
+        foreach my $path (map {($_, "$_.mbox")} $list->name) {
+            $cmds .= sprintf "rsync -za -e'ssh -p%d' %s\@%s:/var/lib/mailman/archives/private/%s /var/lib/mailman/archives/private\n",
+                $sync->{port}, $sync->{user}, $sync->{host}, $path
+            ;
+            $cmds .= sprintf "chown -R root:mailman /var/lib/mailman/archives/private/%s\n",
+                $path
+            ;
+        }
+        $self->add_to_script($cmds);
+    }
+
     method _build_mail_server_id {
         return $self->get_server_id($self->config->server('mail'));
     }
@@ -101,12 +151,12 @@ class P2I::Converter::Mail extends P2I::Converter {
             gid                     => \$def->{gid},
             maildir                 => sub { $self->_create_maildir(shift, $def) },
             quota                   => sub { my $q=shift->quota; -1==$q ? 0 : $q },
-            cc                      => sub { my $self=shift; $self->redirect ? $self->redir_addr : ''},
+            cc                      => sub { my $self=shift; $self->redirect ? join(' ', $self->redir_addr, $self->db->get_redirs($self->mail_name, $self->domain)) : ''},
             homedir                 => \$def->{homedir},
-            autoresponder           => \'n',
+            autoresponder           => sub { my $self = shift; $self->autoresponder ? 'y' : 'n' },
             autoresponder_start_date=> '',
             autoresponder_end_date  => '',
-            autoresponder_text      => '',
+            autoresponder_text      => 'response',
             move_junk               => \'y',
             custom_mailfilter       => '',
             postfix                 => \'y',
@@ -157,12 +207,14 @@ EOF
         my $oli_repo = <<EOF;
 [Repository %s]
 type = IMAP
+readonly = %s
 ssl = %s
 maxconnections = 10
 remoteport = %d
 remotehost = %s
 remoteuser = %s
 remotepass = %s
+nametrans: %s
 
 EOF
 
@@ -187,9 +239,9 @@ EOF
             
             my $section = sprintf($oli_acct, ($acct) x 3);
             $section .=   sprintf($oli_repo,
-                    "${acct}_Old", @sslparams, $host, $login, $d->{password});
+                    "${acct}_Old", 'True', @sslparams, $host, $login, $d->{password}, "lambda folder: 'Junk' if folder == 'INBOX.Spam' else re.sub(r'^INBOX.', r'', folder)");
             $section .=   sprintf($oli_repo,
-                    "${acct}_New", @sslparams, $self->config->server('mail'), $login, $d->{password});
+                    "${acct}_New", 'False', @sslparams, $self->config->server('mail'), $login, $d->{password}, "lambda folder: 'INBOX.Spam' if folder == 'Junk' else 'INBOX' if folder == 'INBOX' else 'INBOX.' + folder");
             $self->add_to_file($file, $section);
         }
     }

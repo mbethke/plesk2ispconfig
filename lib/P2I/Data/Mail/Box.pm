@@ -12,6 +12,7 @@ class P2I::Data::Mail::Box with P2I::Role::Password {
         (is => 'ro', isa => MysqlBool, coerce => 1);
     has virusfilter => (is => 'ro', isa => enum([qw/ none incoming outgoing any /]));
     has quota       => (is => 'ro', isa => Bigint);
+    has response    => (is => 'ro', isa => Maybe[Str]);
 # perm_id       | int(10) unsigned
 
     method email { return $self->mail_name . '@' . $self->domain; }

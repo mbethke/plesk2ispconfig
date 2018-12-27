@@ -13,11 +13,13 @@ class P2I::DB::Mail extends P2I::PleskDB {
                 m.mbox_quota quota,
                 a.password, a.type password_type,
                 d.name domain,
-                c.login, c.pname realname
+                c.login, c.pname realname,
+                r.text response
             FROM mail m
             JOIN accounts a ON m.account_id=a.id
             JOIN domains d ON m.dom_id=d.id
-            JOIN clients c on d.cl_id=c.id
+            JOIN clients c ON d.cl_id=c.id
+            LEFT OUTER JOIN mail_resp r ON r.mn_id=m.id
             ] . $sql,
             @$doms
         );
@@ -29,10 +31,39 @@ class P2I::DB::Mail extends P2I::PleskDB {
             SELECT m.mail_name, d.name domain, c.login, a.alias
             FROM mail m
             JOIN domains d ON m.dom_id=d.id
-            JOIN clients c on d.cl_id=c.id
+            JOIN clients c ON d.cl_id=c.id
             JOIN mail_aliases a on m.id=a.mn_id
             ] . $sql,
             @$doms
         );
+    }
+
+    method get_aliasdomains(Str $domain) {
+        return $self->query_flat(q[
+            SELECT a.name
+            FROM domainaliases a
+            JOIN domains d ON d.id=a.dom_id
+            WHERE a.mail='true' AND d.name=?
+            ], $domain
+        );
+    }
+
+    method get_maillists {
+        # Incorrectly returns client email and password as list owner email and password
+        my ($doms, $sql) = $self->domain_sql('WHERE d.name');
+        return map { P2I::Data::Mail::List->new($_) } $self->query_hashes(q[
+            SELECT l.name, d.name domain, c.login, c.email,
+                a.password, a.type password_type
+            FROM MailLists l
+            JOIN domains d ON l.dom_id=d.id
+            JOIN clients c ON d.cl_id=c.id
+            JOIN accounts a ON c.account_id=a.id
+            ] . $sql,
+            @$doms
+        );
+    }
+
+    method get_redirs (Str $mail_name, Str $domain) {
+        return $self->query_flat(q[ SELECT r.address FROM mail_redir r JOIN mail m ON r.mn_id=m.id JOIN domains d ON m.dom_id=d.id WHERE m.mail_name=? AND d.name=? ], $mail_name, $domain);
     }
 }
