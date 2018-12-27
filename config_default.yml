@@ -13,6 +13,9 @@ defaults:
     suexec: y
     traffic_quota_lock: n
     stats_type: webalizer
+  dns:
+    ns: ns.domain.tld
+    xfer: 2.3.4.5,6.7.8.9
   users:
     userdir: /var/www/clients/client%c/web%a
     webuserdir: /var/www/clients/client%c/%a/web_user/%a
@@ -20,6 +23,7 @@ server:
   mail: 1.2.3.4
   web: 1.2.3.4
   db: 1.2.3.4
+  dns: 1.2.3.4
 plesk:
   db: psa
   host: 127.0.0.1
