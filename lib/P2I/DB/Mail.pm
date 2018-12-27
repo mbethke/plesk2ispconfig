@@ -38,6 +38,18 @@ class P2I::DB::Mail extends P2I::PleskDB {
         );
     }
 
+    method get_catchalls {
+        my ($doms, $sql) = $self->domain_sql('AND d.name');
+        return map { P2I::Data::Mail::Catchall->new($_) } $self->query_hashes(q[
+            SELECT p.value mail_name, d.name domain, c.login
+            FROM Parameters p
+            JOIN domains d ON d.id=p.id
+            JOIN clients c on d.cl_id=c.id
+            WHERE p.parameter='catch_addr'
+            ], $domain
+        );
+    }
+
     method get_aliasdomains(Str $domain) {
         return $self->query_flat(q[
             SELECT a.name

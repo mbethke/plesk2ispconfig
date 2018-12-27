@@ -35,6 +35,12 @@ class P2I::Converter::Mail extends P2I::Converter {
             $self->_create_alias($clients{$alias->login}, $alias);
         }
 
+        # Convert email catchalls
+        for my $catchall ($self->db->get_catchalls) {
+            $clients{$catchall->login} //= $self->get_client_id($catchall->login);
+            $self->dbg("\tConverting email catchall ", $catchall->mail_name, " (userID ", $catchall->login, ", $clients{$catchall->login})");
+              $self->_create_catchall($clients{$catchall->login}, $catchall);
+        }
         # Convert email lists
         for my $list ($self->db->get_maillists) {
             $clients{$list->login} //= $self->get_client_id($list->login);
@@ -99,6 +105,17 @@ class P2I::Converter::Mail extends P2I::Converter {
             });
     }
 
+    method _create_catchall(Int $client_id, $catchall) {
+        $self->dbg("\tCreating catchall ", $catchall->mail_name, " for ", $catchall->domain, " belonging to $client_id");
+        $self->lather('mail_catchall_add', $client_id, {
+                server_id   => $self->server_id,
+                source      => '@' . $catchall->domain,
+                destination => $catchall->mail_name,
+                type        => 'catchall',
+                active      => 'y'
+            });
+    }
+
     method _create_aliasdomain(Int $client_id, Str $alias, Str $domain) {
         $self->dbg("\tCreating alias $alias for mail domain $domain, belonging to $client_id");
         $self->lather('mail_aliasdomain_add', $client_id, {  # Might be mail_alias_add, but different type
@@ -108,6 +125,7 @@ class P2I::Converter::Mail extends P2I::Converter {
                 type        => 'aliasdomain',
                 active      => 'y',
             });
+    }
 
     method _create_list(Int $client_id, $list) {
         $self->dbg("\tCreating email list ", $list->name, " for ", $list->domain, " belonging to $client_id");
